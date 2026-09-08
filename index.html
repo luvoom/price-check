@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a41">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Price Check">
+  <title>Price Check</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+
+    <!-- Version History -->
+    <details class="version-history" id="versionHistory">
+      <summary>
+        <span class="vh-label">Version History</span>
+        <span class="vh-current" id="versionCurrent">—</span>
+      </summary>
+      <div class="vh-body" id="versionBody"></div>
+    </details>
+
+    <h1 class="title">Price Check</h1>
+
+    <!-- Current Price -->
+    <section class="card">
+      <label class="field-label" for="price">Current Price</label>
+      <div class="price-input-wrap">
+        <span class="currency">$</span>
+        <input
+          id="price"
+          class="price-input"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          placeholder="0.00">
+      </div>
+    </section>
+
+    <!-- Discount -->
+    <section class="card">
+      <span class="field-label">Discount</span>
+      <div class="discount-grid">
+        <button type="button" class="discount-btn" data-discount="25">25% OFF</button>
+        <button type="button" class="discount-btn" data-discount="30">30% OFF</button>
+        <button type="button" class="discount-btn" data-discount="15">15% OFF</button>
+        <button type="button" class="discount-btn" data-discount="10">10% OFF</button>
+        <button type="button" class="discount-btn discount-btn--wide" data-discount="custom">Custom</button>
+      </div>
+
+      <div class="custom-wrap" id="customWrap" hidden>
+        <label class="field-label field-label--sub" for="customDiscount">Custom Discount</label>
+        <div class="percent-input-wrap">
+          <input
+            id="customDiscount"
+            class="percent-input"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            placeholder="0">
+          <span class="percent">%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sales Tax -->
+    <section class="card">
+      <label class="field-label" for="tax">Sales Tax</label>
+      <div class="percent-input-wrap">
+        <input
+          id="tax"
+          class="percent-input"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          placeholder="0">
+        <span class="percent">%</span>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <button type="button" class="btn-primary" id="calcBtn">Calculate Total</button>
+
+    <p class="error" id="error" hidden></p>
+
+    <!-- Results -->
+    <section class="card results" id="results" hidden>
+      <div class="result-row">
+        <span class="result-label">Original Price</span>
+        <span class="result-value" id="rOriginal">$0.00</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label" id="rDiscountLabel">Discount</span>
+        <span class="result-value result-value--minus" id="rDiscount">-$0.00</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">Price After Discount</span>
+        <span class="result-value" id="rAfter">$0.00</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label" id="rTaxLabel">Sales Tax</span>
+        <span class="result-value" id="rTax">$0.00</span>
+      </div>
+      <div class="result-total">
+        <span class="total-label">Final Total</span>
+        <span class="total-value" id="rTotal">$0.00</span>
+      </div>
+    </section>
+
+    <button type="button" class="btn-secondary" id="resetBtn">Reset</button>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "Price Check",
+  "short_name": "Price Check",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f3f5",
+  "theme_color": "#1b2a41"
+}

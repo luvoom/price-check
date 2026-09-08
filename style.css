@@ -1,0 +1,345 @@
+/* ==========================================================================
+   Price Check - style.css
+   Plain CSS only. No frameworks, no external fonts, no CDN.
+   ========================================================================== */
+
+:root {
+  --navy: #1b2a41;
+  --navy-dark: #121d2e;
+  --charcoal: #3a4250;
+  --gray-text: #6b7280;
+  --line: #d9dde3;
+  --bg: #f2f3f5;
+  --card: #ffffff;
+  --radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--charcoal);
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  padding-left: calc(16px + env(safe-area-inset-left));
+  padding-right: calc(16px + env(safe-area-inset-right));
+  padding-bottom: calc(48px + env(safe-area-inset-bottom));
+}
+
+/* --- Version History ----------------------------------------------------- */
+
+.version-history {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
+.version-history > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--gray-text);
+  list-style: none;
+}
+
+.version-history > summary::-webkit-details-marker {
+  display: none;
+}
+
+.vh-label {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.vh-current {
+  font-variant-numeric: tabular-nums;
+}
+
+.vh-body {
+  padding: 0 16px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.vh-entry {
+  padding-top: 14px;
+}
+
+.vh-version {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.vh-body ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  color: var(--gray-text);
+}
+
+.vh-body li {
+  margin: 3px 0;
+}
+
+/* --- Title --------------------------------------------------------------- */
+
+.title {
+  margin: 4px 0 20px;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+}
+
+/* --- Cards --------------------------------------------------------------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  margin-bottom: 16px;
+}
+
+.field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+.field-label--sub {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  margin-top: 16px;
+}
+
+/* --- Inputs -------------------------------------------------------------- */
+
+.price-input-wrap,
+.percent-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfbfc;
+  padding: 0 16px;
+}
+
+.price-input-wrap:focus-within,
+.percent-input-wrap:focus-within {
+  border-color: var(--navy);
+  background: #ffffff;
+}
+
+.currency,
+.percent {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--gray-text);
+}
+
+.currency {
+  margin-right: 6px;
+}
+
+.percent {
+  margin-left: 6px;
+}
+
+.price-input,
+.percent-input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--navy);
+  font-family: inherit;
+  font-size: 30px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 14px 0;
+}
+
+.percent-input {
+  font-size: 26px;
+}
+
+.price-input::placeholder,
+.percent-input::placeholder {
+  color: #b6bcc5;
+  font-weight: 500;
+}
+
+/* --- Discount buttons ---------------------------------------------------- */
+
+.discount-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.discount-btn {
+  min-height: 60px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--charcoal);
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.discount-btn--wide {
+  grid-column: 1 / -1;
+}
+
+.discount-btn.is-selected {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+}
+
+/* --- Action buttons ------------------------------------------------------ */
+
+.btn-primary {
+  display: block;
+  width: 100%;
+  min-height: 64px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--navy);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.btn-primary:active {
+  background: var(--navy-dark);
+}
+
+.btn-secondary {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--gray-text);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* --- Error --------------------------------------------------------------- */
+
+.error {
+  margin: 14px 2px 0;
+  color: #9b2c2c;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* --- Results ------------------------------------------------------------- */
+
+.results {
+  margin-top: 16px;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.result-label {
+  font-size: 16px;
+  color: var(--gray-text);
+}
+
+.result-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--charcoal);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.result-value--minus {
+  color: #9b2c2c;
+}
+
+.result-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 18px;
+  border-top: 2px solid var(--navy);
+}
+
+.total-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.total-value {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+/* --- Small phones -------------------------------------------------------- */
+
+@media (max-width: 359px) {
+  .total-value { font-size: 34px; }
+  .price-input { font-size: 26px; }
+  .discount-btn { font-size: 17px; }
+}
