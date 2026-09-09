@@ -18,6 +18,12 @@
   box-sizing: border-box;
 }
 
+/* Anything the script hides stays hidden, even when a rule below gives it a
+   display value of its own. */
+[hidden] {
+  display: none !important;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -122,6 +128,12 @@ body {
   margin-bottom: 16px;
 }
 
+/* The optional second discount, set apart with a light gray background. */
+.card--second {
+  background: #eceef1;
+  border-color: #cfd4da;
+}
+
 .field-label {
   display: block;
   font-size: 14px;
@@ -130,6 +142,23 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 12px;
+}
+
+.field-hint {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b919b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.section-note {
+  margin: -6px 0 14px;
+  font-size: 13px;
+  color: var(--gray-text);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .field-label--sub {
@@ -227,6 +256,13 @@ body {
   background: var(--navy);
   border-color: var(--navy);
   color: #ffffff;
+}
+
+/* "No Second Discount" is a muted gray when chosen, so a filled navy button
+   always means an actual discount is switched on. */
+.discount-btn[data-discount="none"].is-selected {
+  background: #7c838e;
+  border-color: #7c838e;
 }
 
 /* --- Action buttons ------------------------------------------------------ */
@@ -334,6 +370,41 @@ body {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   white-space: nowrap;
+}
+
+/* --- Calculation steps --------------------------------------------------- */
+
+.math {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.math-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.math-steps {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--gray-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.math-steps li {
+  margin: 2px 0;
+}
+
+.math-steps b {
+  font-weight: 600;
+  color: var(--charcoal);
 }
 
 /* --- Small phones -------------------------------------------------------- */

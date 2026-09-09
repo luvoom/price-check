@@ -11,6 +11,23 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.3.0",
+    changes: [
+      "Added an optional Second Discount section below the first one",
+      "The second discount comes off the price the first discount left, not added to it",
+      "Second Discount is off by default and set apart with a gray background",
+      "Results show both discounts and both subtotals on separate lines"
+    ]
+  },
+  {
+    version: "0.2.0",
+    changes: [
+      "Discount buttons now run in order: 10% / 15% / 20% / 25% / 30% / 35% OFF",
+      "Added 20% and 35% presets",
+      "Results now show the calculation written out step by step, so the numbers can be checked by hand"
+    ]
+  },
+  {
     version: "0.1.0",
     changes: [
       "Enter a current price and get the final total",
@@ -32,9 +49,6 @@ var DEFAULT_TAX_RATE = 8.375;
    -------------------------------------------------------------------------- */
 var priceInput = document.getElementById("price");
 var taxInput = document.getElementById("tax");
-var customWrap = document.getElementById("customWrap");
-var customInput = document.getElementById("customDiscount");
-var discountButtons = document.querySelectorAll(".discount-btn");
 var calcBtn = document.getElementById("calcBtn");
 var resetBtn = document.getElementById("resetBtn");
 var errorEl = document.getElementById("error");
@@ -44,15 +58,19 @@ var rOriginal = document.getElementById("rOriginal");
 var rDiscount = document.getElementById("rDiscount");
 var rDiscountLabel = document.getElementById("rDiscountLabel");
 var rAfter = document.getElementById("rAfter");
+var rAfterLabel = document.getElementById("rAfterLabel");
+var rDiscount2Row = document.getElementById("rDiscount2Row");
+var rDiscount2 = document.getElementById("rDiscount2");
+var rDiscount2Label = document.getElementById("rDiscount2Label");
+var rAfter2Row = document.getElementById("rAfter2Row");
+var rAfter2 = document.getElementById("rAfter2");
 var rTax = document.getElementById("rTax");
 var rTaxLabel = document.getElementById("rTaxLabel");
 var rTotal = document.getElementById("rTotal");
+var mathSteps = document.getElementById("mathSteps");
 
 var versionCurrent = document.getElementById("versionCurrent");
 var versionBody = document.getElementById("versionBody");
-
-/* Which discount is chosen: null, a number like 25, or the string "custom". */
-var selectedDiscount = null;
 
 /* --------------------------------------------------------------------------
    Helpers
@@ -83,6 +101,19 @@ function formatMoney(amount) {
 /* Formats a percentage without trailing zeros, e.g. 8.375 -> "8.375" */
 function formatPercent(value) {
   return String(Math.round(value * 1000) / 1000);
+}
+
+/* Adds one line to the "How this was calculated" list, e.g.
+   "Discount: $34.00 x 25% = $8.50" with the answer in bold. */
+function addStep(label, expression, result) {
+  var item = document.createElement("li");
+  item.appendChild(document.createTextNode(label + ": " + expression + " = "));
+
+  var answer = document.createElement("b");
+  answer.textContent = result;
+  item.appendChild(answer);
+
+  mathSteps.appendChild(item);
 }
 
 function showError(message) {
@@ -132,41 +163,79 @@ function renderVersionHistory() {
 /* --------------------------------------------------------------------------
    Discount selection
    -------------------------------------------------------------------------- */
-function selectDiscount(value) {
-  selectedDiscount = value;
+/* Builds one discount section (buttons + its Custom field). The page has two
+   of these: the first discount and the optional second discount. They behave
+   the same way, so the same code runs both.
 
-  for (var i = 0; i < discountButtons.length; i++) {
-    var button = discountButtons[i];
-    var isSelected = button.getAttribute("data-discount") === String(value);
-    if (isSelected) {
-      button.classList.add("is-selected");
-      button.setAttribute("aria-pressed", "true");
-    } else {
-      button.classList.remove("is-selected");
-      button.setAttribute("aria-pressed", "false");
+   "selected" holds null (nothing chosen), the string "none", the string
+   "custom", or a number such as 25. */
+function createDiscountSection(gridId, customWrapId, customInputId, defaultValue) {
+  var section = {
+    buttons: document.querySelectorAll("#" + gridId + " .discount-btn"),
+    customWrap: document.getElementById(customWrapId),
+    customInput: document.getElementById(customInputId),
+    defaultValue: defaultValue,
+    selected: null
+  };
+
+  section.select = function (value, focusCustom) {
+    section.selected = value;
+
+    for (var i = 0; i < section.buttons.length; i++) {
+      var button = section.buttons[i];
+      if (button.getAttribute("data-discount") === String(value)) {
+        button.classList.add("is-selected");
+        button.setAttribute("aria-pressed", "true");
+      } else {
+        button.classList.remove("is-selected");
+        button.setAttribute("aria-pressed", "false");
+      }
     }
+
+    section.customWrap.hidden = value !== "custom";
+    if (value === "custom" && focusCustom) {
+      section.customInput.focus();
+    }
+  };
+
+  /* Reads the section as a percentage. Returns null if what was typed into
+     the Custom field is not a usable number. */
+  section.getPercent = function () {
+    if (section.selected === "custom") {
+      var typed = parseNumber(section.customInput.value);
+      if (isNaN(typed) || typed < 0 || typed > 100) {
+        return null;
+      }
+      return typed;
+    }
+    if (typeof section.selected === "number") {
+      return section.selected;
+    }
+    return 0;
+  };
+
+  for (var i = 0; i < section.buttons.length; i++) {
+    section.buttons[i].addEventListener("click", function (event) {
+      var raw = event.currentTarget.getAttribute("data-discount");
+      var value = (raw === "custom" || raw === "none") ? raw : Number(raw);
+
+      /* Tapping the button that is already on returns the section to its
+         starting state. */
+      if (section.selected === value) {
+        section.select(section.defaultValue, false);
+      } else {
+        section.select(value, true);
+      }
+      clearError();
+    });
   }
 
-  customWrap.hidden = value !== "custom";
-  if (value === "custom") {
-    customInput.focus();
-  }
+  section.select(defaultValue, false);
+  return section;
 }
 
-for (var i = 0; i < discountButtons.length; i++) {
-  discountButtons[i].addEventListener("click", function (event) {
-    var raw = event.currentTarget.getAttribute("data-discount");
-    var value = raw === "custom" ? "custom" : Number(raw);
-
-    /* Tapping the selected button again turns the discount off. */
-    if (selectedDiscount === value) {
-      selectDiscount(null);
-    } else {
-      selectDiscount(value);
-    }
-    clearError();
-  });
-}
+var firstDiscount = createDiscountSection("discountGrid1", "customWrap1", "customDiscount1", null);
+var secondDiscount = createDiscountSection("discountGrid2", "customWrap2", "customDiscount2", "none");
 
 /* --------------------------------------------------------------------------
    Calculate
@@ -186,36 +255,90 @@ function calculate() {
     return;
   }
 
-  var discountPercent = 0;
-  if (selectedDiscount === "custom") {
-    discountPercent = parseNumber(customInput.value);
-    if (isNaN(discountPercent) || discountPercent < 0 || discountPercent > 100) {
-      showError("Enter a custom discount between 0 and 100.");
-      customInput.focus();
-      return;
-    }
-  } else if (typeof selectedDiscount === "number") {
-    discountPercent = selectedDiscount;
+  var firstPercent = firstDiscount.getPercent();
+  if (firstPercent === null) {
+    showError("Enter a first discount between 0 and 100.");
+    firstDiscount.customInput.focus();
+    return;
+  }
+
+  var secondPercent = secondDiscount.getPercent();
+  if (secondPercent === null) {
+    showError("Enter a second discount between 0 and 100.");
+    secondDiscount.customInput.focus();
+    return;
   }
 
   clearError();
 
-  /* Every displayed number is rounded to cents, and each step uses the
-     rounded value from the step before, so the breakdown always adds up. */
-  var discountAmount = roundCents(price * (discountPercent / 100));
-  var priceAfterDiscount = roundCents(price - discountAmount);
-  var salesTax = roundCents(priceAfterDiscount * (taxRate / 100));
-  var finalTotal = roundCents(priceAfterDiscount + salesTax);
+  /* The second discount comes off whatever the first discount left behind -
+     it is never added to the first one. 25% and then another 25% is NOT 50%
+     off. Every displayed number is rounded to cents and the next step uses
+     that rounded value, so the breakdown on screen always adds up. */
+  var firstAmount = roundCents(price * (firstPercent / 100));
+  var subtotalAfterFirst = roundCents(price - firstAmount);
+  var secondAmount = roundCents(subtotalAfterFirst * (secondPercent / 100));
+  var subtotalAfterSecond = roundCents(subtotalAfterFirst - secondAmount);
+  var salesTax = roundCents(subtotalAfterSecond * (taxRate / 100));
+  var finalTotal = roundCents(subtotalAfterSecond + salesTax);
+
+  var usesSecond = secondPercent > 0;
 
   rOriginal.textContent = formatMoney(price);
-  rDiscountLabel.textContent = discountPercent > 0
-    ? formatPercent(discountPercent) + "% Discount"
-    : "Discount";
-  rDiscount.textContent = "-" + formatMoney(discountAmount);
-  rAfter.textContent = formatMoney(priceAfterDiscount);
+  rDiscountLabel.textContent = "First Discount (" + formatPercent(firstPercent) + "%)";
+  rDiscount.textContent = "-" + formatMoney(firstAmount);
+  rAfterLabel.textContent = usesSecond
+    ? "Subtotal After First Discount"
+    : "Price After Discount";
+  rAfter.textContent = formatMoney(subtotalAfterFirst);
+
+  rDiscount2Row.hidden = !usesSecond;
+  rAfter2Row.hidden = !usesSecond;
+  if (usesSecond) {
+    rDiscount2Label.textContent = "Second Discount (" + formatPercent(secondPercent) + "%)";
+    rDiscount2.textContent = "-" + formatMoney(secondAmount);
+    rAfter2.textContent = formatMoney(subtotalAfterSecond);
+  }
+
   rTaxLabel.textContent = "Sales Tax (" + formatPercent(taxRate) + "%)";
   rTax.textContent = formatMoney(salesTax);
   rTotal.textContent = formatMoney(finalTotal);
+
+  /* The same four steps written out in plain English, so anyone can check
+     the numbers by hand. */
+  mathSteps.textContent = "";
+  addStep(
+    usesSecond ? "First discount" : "Discount",
+    formatMoney(price) + " × " + formatPercent(firstPercent) + "%",
+    formatMoney(firstAmount)
+  );
+  addStep(
+    usesSecond ? "Subtotal after first discount" : "Price after discount",
+    formatMoney(price) + " − " + formatMoney(firstAmount),
+    formatMoney(subtotalAfterFirst)
+  );
+  if (usesSecond) {
+    addStep(
+      "Second discount",
+      formatMoney(subtotalAfterFirst) + " × " + formatPercent(secondPercent) + "%",
+      formatMoney(secondAmount)
+    );
+    addStep(
+      "Subtotal after second discount",
+      formatMoney(subtotalAfterFirst) + " − " + formatMoney(secondAmount),
+      formatMoney(subtotalAfterSecond)
+    );
+  }
+  addStep(
+    "Sales tax",
+    formatMoney(subtotalAfterSecond) + " × " + formatPercent(taxRate) + "%",
+    formatMoney(salesTax)
+  );
+  addStep(
+    "Final total",
+    formatMoney(subtotalAfterSecond) + " + " + formatMoney(salesTax),
+    formatMoney(finalTotal)
+  );
 
   resultsEl.hidden = false;
 }
@@ -225,9 +348,11 @@ function calculate() {
    -------------------------------------------------------------------------- */
 function reset() {
   priceInput.value = "";
-  customInput.value = "";
+  firstDiscount.customInput.value = "";
+  secondDiscount.customInput.value = "";
   taxInput.value = formatPercent(DEFAULT_TAX_RATE);
-  selectDiscount(null);
+  firstDiscount.select(null, false);
+  secondDiscount.select("none", false);
   clearError();
   resultsEl.hidden = true;
   priceInput.focus();
@@ -248,7 +373,8 @@ function calculateOnEnter(event) {
 }
 priceInput.addEventListener("keydown", calculateOnEnter);
 taxInput.addEventListener("keydown", calculateOnEnter);
-customInput.addEventListener("keydown", calculateOnEnter);
+firstDiscount.customInput.addEventListener("keydown", calculateOnEnter);
+secondDiscount.customInput.addEventListener("keydown", calculateOnEnter);
 
 /* --------------------------------------------------------------------------
    Start up

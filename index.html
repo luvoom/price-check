@@ -40,22 +40,58 @@
       </div>
     </section>
 
-    <!-- Discount -->
+    <!-- First Discount -->
     <section class="card">
-      <span class="field-label">Discount</span>
-      <div class="discount-grid">
+      <span class="field-label">First Discount</span>
+      <div class="discount-grid" id="discountGrid1">
+        <button type="button" class="discount-btn" data-discount="10">10% OFF</button>
+        <button type="button" class="discount-btn" data-discount="15">15% OFF</button>
+        <button type="button" class="discount-btn" data-discount="20">20% OFF</button>
         <button type="button" class="discount-btn" data-discount="25">25% OFF</button>
         <button type="button" class="discount-btn" data-discount="30">30% OFF</button>
-        <button type="button" class="discount-btn" data-discount="15">15% OFF</button>
-        <button type="button" class="discount-btn" data-discount="10">10% OFF</button>
+        <button type="button" class="discount-btn" data-discount="35">35% OFF</button>
         <button type="button" class="discount-btn discount-btn--wide" data-discount="custom">Custom</button>
       </div>
 
-      <div class="custom-wrap" id="customWrap" hidden>
-        <label class="field-label field-label--sub" for="customDiscount">Custom Discount</label>
+      <div class="custom-wrap" id="customWrap1" hidden>
+        <label class="field-label field-label--sub" for="customDiscount1">Custom Discount</label>
         <div class="percent-input-wrap">
           <input
-            id="customDiscount"
+            id="customDiscount1"
+            class="percent-input"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            placeholder="0">
+          <span class="percent">%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Second Discount (optional, taken off the price the first discount left) -->
+    <section class="card card--second">
+      <span class="field-label">
+        Second Discount
+        <span class="field-hint">Optional</span>
+      </span>
+      <p class="section-note">Taken off the price after the first discount.</p>
+
+      <div class="discount-grid" id="discountGrid2">
+        <button type="button" class="discount-btn discount-btn--wide" data-discount="none">No Second Discount</button>
+        <button type="button" class="discount-btn" data-discount="10">10% OFF</button>
+        <button type="button" class="discount-btn" data-discount="15">15% OFF</button>
+        <button type="button" class="discount-btn" data-discount="20">20% OFF</button>
+        <button type="button" class="discount-btn" data-discount="25">25% OFF</button>
+        <button type="button" class="discount-btn" data-discount="30">30% OFF</button>
+        <button type="button" class="discount-btn" data-discount="35">35% OFF</button>
+        <button type="button" class="discount-btn discount-btn--wide" data-discount="custom">Custom</button>
+      </div>
+
+      <div class="custom-wrap" id="customWrap2" hidden>
+        <label class="field-label field-label--sub" for="customDiscount2">Custom Second Discount</label>
+        <div class="percent-input-wrap">
+          <input
+            id="customDiscount2"
             class="percent-input"
             type="text"
             inputmode="decimal"
@@ -93,12 +129,20 @@
         <span class="result-value" id="rOriginal">$0.00</span>
       </div>
       <div class="result-row">
-        <span class="result-label" id="rDiscountLabel">Discount</span>
+        <span class="result-label" id="rDiscountLabel">First Discount</span>
         <span class="result-value result-value--minus" id="rDiscount">-$0.00</span>
       </div>
       <div class="result-row">
-        <span class="result-label">Price After Discount</span>
+        <span class="result-label" id="rAfterLabel">Price After Discount</span>
         <span class="result-value" id="rAfter">$0.00</span>
+      </div>
+      <div class="result-row" id="rDiscount2Row" hidden>
+        <span class="result-label" id="rDiscount2Label">Second Discount</span>
+        <span class="result-value result-value--minus" id="rDiscount2">-$0.00</span>
+      </div>
+      <div class="result-row" id="rAfter2Row" hidden>
+        <span class="result-label">Subtotal After Second Discount</span>
+        <span class="result-value" id="rAfter2">$0.00</span>
       </div>
       <div class="result-row">
         <span class="result-label" id="rTaxLabel">Sales Tax</span>
@@ -107,6 +151,11 @@
       <div class="result-total">
         <span class="total-label">Final Total</span>
         <span class="total-value" id="rTotal">$0.00</span>
+      </div>
+
+      <div class="math">
+        <div class="math-title">How this was calculated</div>
+        <ol class="math-steps" id="mathSteps"></ol>
       </div>
     </section>
 
