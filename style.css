@@ -9,6 +9,9 @@
   --charcoal: #3a4250;
   --gray-text: #6b7280;
   --line: #d9dde3;
+  --savings: #1c7a4f;
+  --savings-bg: #edf5f0;
+  --savings-line: #c8dfd2;
   --bg: #f2f3f5;
   --card: #ffffff;
   --radius: 12px;
@@ -345,30 +348,33 @@ body {
   color: #9b2c2c;
 }
 
+/* The total sits on its own line so the number can be big enough to read
+   from across a counter. */
 .result-total {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   margin-top: 14px;
   padding-top: 18px;
   border-top: 2px solid var(--navy);
 }
 
 .total-label {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--gray-text);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
 .total-value {
-  font-size: 40px;
+  font-size: 56px;
+  line-height: 1.05;
   font-weight: 700;
   color: var(--navy);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   white-space: nowrap;
 }
 
@@ -407,10 +413,355 @@ body {
   color: var(--charcoal);
 }
 
+/* --- Multiple items (collapsible, closed until it is opened) -------------- */
+
+.advanced {
+  margin-top: 28px;
+  background: #eceef1;
+  border: 1px solid #cfd4da;
+  border-radius: var(--radius);
+}
+
+.advanced-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 0 16px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--navy);
+  list-style: none;
+}
+
+.advanced-summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-icon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #b9bfc7;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--charcoal);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 26px;
+  text-align: center;
+}
+
+.advanced-icon::after {
+  content: "+";
+}
+
+.advanced[open] .advanced-icon::after {
+  content: "–";
+}
+
+.advanced-body {
+  padding: 4px 16px 20px;
+  border-top: 1px solid #cfd4da;
+}
+
+.advanced-body .section-note {
+  margin: 14px 0 16px;
+}
+
+.section-note--tight {
+  margin: 14px 0 16px;
+}
+
+.advanced-body .field-label--sub {
+  margin-top: 22px;
+}
+
+/* --- Item rows ----------------------------------------------------------- */
+
+.item-head,
+.item-row {
+  display: grid;
+  grid-template-columns: 1.25fr 0.6fr 1.2fr 34px;
+  gap: 8px;
+  align-items: center;
+}
+
+.item-head {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.item-row {
+  margin-bottom: 8px;
+}
+
+.item-input,
+.item-select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--navy);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.item-select {
+  padding-right: 4px;
+}
+
+.item-input:focus,
+.item-select:focus {
+  outline: 2px solid var(--navy);
+  outline-offset: -2px;
+}
+
+.item-remove {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #c4cad2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--gray-text);
+  font-family: inherit;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* The Custom percentage for one row, shown under that row. */
+.item-custom {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0 6px;
+  font-size: 13px;
+  color: var(--gray-text);
+}
+
+.item-custom .item-input {
+  max-width: 110px;
+}
+
+/* --- Additional discount chips ------------------------------------------- */
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  flex: 1 1 auto;
+  min-width: 56px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--charcoal);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.chip.is-selected {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+}
+
+.btn-secondary--light {
+  margin-top: 8px;
+  background: #ffffff;
+  color: var(--charcoal);
+}
+
+/* --- Savings-focused results --------------------------------------------- */
+
+.original-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.original-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.original-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--charcoal);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.adv-section-title {
+  margin: 16px 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Savings read as a good thing, not as a charge. */
+.result-value--savings {
+  color: var(--savings);
+}
+
+/* --- Per-item breakdown -------------------------------------------------- */
+
+.adv-breakdown {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-line {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.item-line:first-child {
+  padding-top: 0;
+}
+
+.item-line-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.item-line-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.item-line-badge {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--savings-bg);
+  color: var(--savings);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.item-line-badge--plain {
+  background: #eef0f3;
+  color: var(--gray-text);
+}
+
+.item-line-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--gray-text);
+  padding: 1px 0;
+}
+
+.item-line-row b {
+  font-weight: 600;
+  color: var(--charcoal);
+  white-space: nowrap;
+}
+
+.item-line-row b.is-savings {
+  color: var(--savings);
+}
+
+/* --- Total savings ------------------------------------------------------- */
+
+.savings-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin: 16px 0 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--savings-line);
+  border-radius: 10px;
+  background: var(--savings-bg);
+}
+
+.savings-box-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--savings);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.savings-box-value {
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--savings);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.savings-box-note {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--savings);
+}
+
+.saved-today {
+  margin: 14px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--savings);
+  text-align: center;
+}
+
 /* --- Small phones -------------------------------------------------------- */
 
 @media (max-width: 359px) {
-  .total-value { font-size: 34px; }
+  .total-value { font-size: 44px; }
   .price-input { font-size: 26px; }
   .discount-btn { font-size: 17px; }
+  .item-head,
+  .item-row { grid-template-columns: 1.2fr 0.55fr 1.1fr 30px; }
 }

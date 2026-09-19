@@ -161,6 +161,106 @@
 
     <button type="button" class="btn-secondary" id="resetBtn">Reset</button>
 
+    <!-- Multiple items. Closed until it is needed, which is not often. -->
+    <details class="advanced" id="advanced">
+      <summary class="advanced-summary">
+        <span>Need to calculate multiple items?</span>
+        <span class="advanced-icon" aria-hidden="true"></span>
+      </summary>
+
+      <div class="advanced-body">
+        <p class="section-note">
+          Each item keeps its own discount. They are added up first, then the
+          additional discount comes off the combined subtotal.
+        </p>
+
+        <div class="item-head">
+          <span>Price</span>
+          <span>Qty</span>
+          <span>Discount</span>
+          <span></span>
+        </div>
+        <div id="itemRows"></div>
+
+        <button type="button" class="btn-secondary btn-secondary--light" id="addItemBtn">
+          + Add Item
+        </button>
+
+        <label class="field-label field-label--sub" for="additionalDiscount">
+          Additional Discount
+        </label>
+        <div class="chip-row" id="additionalChips">
+          <button type="button" class="chip" data-percent="0">None</button>
+          <button type="button" class="chip" data-percent="10">10%</button>
+          <button type="button" class="chip" data-percent="15">15%</button>
+          <button type="button" class="chip" data-percent="20">20%</button>
+          <button type="button" class="chip" data-percent="25">25%</button>
+        </div>
+        <div class="percent-input-wrap">
+          <input
+            id="additionalDiscount"
+            class="percent-input"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            placeholder="0">
+          <span class="percent">%</span>
+        </div>
+
+        <p class="section-note section-note--tight">
+          Sales tax uses the rate set above.
+        </p>
+
+        <button type="button" class="btn-primary" id="calcAdvBtn">Calculate Total</button>
+
+        <p class="error" id="advError" hidden></p>
+
+        <section class="card results" id="advResults" hidden>
+          <div class="original-total">
+            <span class="original-label">Original Total</span>
+            <span class="original-value" id="aOriginal">$0.00</span>
+          </div>
+
+          <div class="adv-section-title">Item Breakdown</div>
+          <ul class="adv-breakdown" id="advBreakdown"></ul>
+
+          <div class="result-row">
+            <span class="result-label">Items Subtotal</span>
+            <span class="result-value" id="aSubtotal">$0.00</span>
+          </div>
+          <div class="result-row" id="aItemSavingsRow" hidden>
+            <span class="result-label">Item Discounts Saved</span>
+            <span class="result-value result-value--savings" id="aItemSavings">-$0.00</span>
+          </div>
+          <div class="result-row" id="aDiscountRow" hidden>
+            <span class="result-label" id="aDiscountLabel">Additional Discount</span>
+            <span class="result-value result-value--savings" id="aDiscount">-$0.00</span>
+          </div>
+          <div class="result-row" id="aAfterRow" hidden>
+            <span class="result-label">Subtotal After All Discounts</span>
+            <span class="result-value" id="aAfter">$0.00</span>
+          </div>
+
+          <div class="savings-box" id="aSavingsBox" hidden>
+            <span class="savings-box-label">Total Savings</span>
+            <span class="savings-box-value" id="aTotalSavings">$0.00</span>
+            <span class="savings-box-note" id="aSavingsPercent">You saved 0%</span>
+          </div>
+
+          <div class="result-row">
+            <span class="result-label" id="aTaxLabel">Sales Tax</span>
+            <span class="result-value" id="aTax">$0.00</span>
+          </div>
+          <div class="result-total">
+            <span class="total-label">Final Total</span>
+            <span class="total-value" id="aTotal">$0.00</span>
+          </div>
+
+          <p class="saved-today" id="aSavedToday" hidden>You saved $0.00 today</p>
+        </section>
+      </div>
+    </details>
+
   </main>
 
   <script src="script.js"></script>

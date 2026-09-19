@@ -11,25 +11,25 @@ packages, no server, no accounts, no internet connection required.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.5.0
+- Multiple-item results now open with the Original Total before any discounts
+- Each item shows what was saved on it and what it comes to after its discount
+- Added a Total Savings panel with the dollar amount and the overall percentage saved
+- Added a "You saved $X today" line under the Final Total to show a customer
+- Savings are shown in green so they read as money off, not as a charge
+
+### Version 0.4.0
+- Added a "Need to calculate multiple items?" section at the bottom, closed until you open it
+- Add as many items as you need, each with its own price, quantity and discount
+- An additional discount can be taken off the combined subtotal of all the items
+- Results list every item, then the subtotal, additional discount, tax and total
+- The Final Total is now much larger and easier to show to a customer
+
 ### Version 0.3.0
 - Added an optional Second Discount section below the first one
 - The second discount comes off the price the first discount left, not added to it
 - Second Discount is off by default and set apart with a gray background
 - Results show both discounts and both subtotals on separate lines
-
-### Version 0.2.0
-- Discount buttons now run in order: 10% / 15% / 20% / 25% / 30% / 35% OFF
-- Added 20% and 35% presets
-- Results now show the calculation written out step by step, so the numbers can be checked by hand
-
-### Version 0.1.0
-- Enter a current price and get the final total
-- One-tap discount buttons: 25% / 30% / 15% / 10% OFF
-- Custom discount option for any other percentage
-- Sales tax field, set to 8.375% by default and editable
-- Full breakdown: original price, discount, price after discount, tax, final total
-- Reset button clears the price and discount but keeps the tax rate
-- Works offline once saved to the iPhone Home Screen
 
 ---
 
@@ -66,6 +66,35 @@ $34.00 − 25% − 25% shows $19.12 rather than $19.13: $6.375 rounds up to $6.3
 for the second discount line, and $25.50 − $6.38 is $19.12. Rounding only at
 the very end would show $19.13, but then the lines on screen would no longer
 subtract correctly by hand.
+
+### Multiple items
+
+```
+rowSubtotal    = round(price × quantity × (1 − itemPercent / 100))   per row
+itemsSubtotal  = the rounded row subtotals added together
+additional     = round(itemsSubtotal × additionalPercent / 100)
+subtotalAfter  = round(itemsSubtotal − additional)
+salesTax       = round(subtotalAfter × taxRate / 100)
+finalTotal     = round(subtotalAfter + salesTax)
+```
+
+Same rule as the two-discount chain: the per-item discounts and the
+additional discount are applied in sequence, never added together. The
+section reuses the sales tax rate from the main calculator rather than
+carrying a second tax field.
+
+The savings figures shown alongside come from the same numbers:
+
+```
+originalTotal   = the rounded (price × quantity) of every row added together
+itemSavings     = originalTotal − itemsSubtotal
+totalSavings    = originalTotal − subtotalAfter
+savingsPercent  = totalSavings / originalTotal × 100      (shown to 1 decimal)
+```
+
+`totalSavings` is measured before tax is added, so tax is never counted as a
+saving. The savings rows, the Total Savings panel and the "You saved $X
+today" line are hidden when nothing was discounted.
 
 ### Version history
 
