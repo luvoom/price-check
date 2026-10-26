@@ -1,7 +1,7 @@
 # Price Check
 
-A small, single-page discount and sales tax calculator, built for quick use on
-an iPhone. Plain HTML, CSS and JavaScript — no frameworks, no build step, no
+A small, single-page calculator for pricing several discounted items at once,
+built for quick use on an iPhone. Plain HTML, CSS and JavaScript — no frameworks, no build step, no
 packages, no server, no accounts, no internet connection required.
 
 ---
@@ -11,6 +11,16 @@ packages, no server, no accounts, no internet connection required.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.6.1
+- Added a Home Screen app icon: a white P on a dark navy square
+- The same icon shows in the browser tab
+
+### Version 0.6.0
+- The item list is now the main screen - nothing to open first
+- Removed the separate single-item calculator; one item is simply one line
+- Additional Discount and Sales Tax work exactly as before
+- Results still show every item, the savings, and the final total
+
 ### Version 0.5.0
 - Multiple-item results now open with the Original Total before any discounts
 - Each item shows what was saved on it and what it comes to after its discount
@@ -18,18 +28,6 @@ source of truth. Update that list first, then copy it here.)*
 - Added a "You saved $X today" line under the Final Total to show a customer
 - Savings are shown in green so they read as money off, not as a charge
 
-### Version 0.4.0
-- Added a "Need to calculate multiple items?" section at the bottom, closed until you open it
-- Add as many items as you need, each with its own price, quantity and discount
-- An additional discount can be taken off the combined subtotal of all the items
-- Results list every item, then the subtotal, additional discount, tax and total
-- The Final Total is now much larger and easier to show to a customer
-
-### Version 0.3.0
-- Added an optional Second Discount section below the first one
-- The second discount comes off the price the first discount left, not added to it
-- Second Discount is off by default and set apart with a gray background
-- Results show both discounts and both subtotals on separate lines
 
 ---
 
@@ -39,49 +37,35 @@ source of truth. Update that list first, then copy it here.)*
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | The page structure: price field, discount buttons, tax field, buttons, results. |
+| `index.html` | The page structure: the item list, additional discount, tax field, buttons, results. |
 | `style.css` | All styling. Neutral palette, large touch targets, iPhone safe-area padding. |
-| `script.js` | All behaviour: version history rendering, discount selection, the calculation, reset, service worker registration. Also holds `VERSION_HISTORY` and `DEFAULT_TAX_RATE`. |
+| `script.js` | All behaviour: version history rendering, the item lines, the calculation, reset, service worker registration. Also holds `VERSION_HISTORY`, `DEFAULT_TAX_RATE`, `ITEM_DISCOUNT_CHOICES` and `STARTING_ITEM_ROWS`. |
 | `manifest.webmanifest` | Lets iOS open the app full-screen when added to the Home Screen. |
 | `sw.js` | Service worker. Caches the app so it opens with no connection. |
+| `apple-touch-icon.png` | 180×180 Home Screen icon for iOS. |
+| `icon-192.png`, `icon-512.png` | The same icon at the two sizes the manifest declares. |
 
 ### Calculation
 
 ```
-firstAmount          = round(price × firstPercent / 100)
-subtotalAfterFirst   = round(price − firstAmount)
-secondAmount         = round(subtotalAfterFirst × secondPercent / 100)
-subtotalAfterSecond  = round(subtotalAfterFirst − secondAmount)
-salesTax             = round(subtotalAfterSecond × taxRate / 100)
-finalTotal           = round(subtotalAfterSecond + salesTax)
-```
-
-The two discounts are applied one after the other: the second percentage is
-taken off `subtotalAfterFirst`, never added to the first percentage. 25% then
-25% is not 50% off.
-
-Each step rounds to cents and feeds the rounded value into the next step, so
-the numbers shown on screen always add up exactly. That means a chain such as
-$34.00 − 25% − 25% shows $19.12 rather than $19.13: $6.375 rounds up to $6.38
-for the second discount line, and $25.50 − $6.38 is $19.12. Rounding only at
-the very end would show $19.13, but then the lines on screen would no longer
-subtract correctly by hand.
-
-### Multiple items
-
-```
-rowSubtotal    = round(price × quantity × (1 − itemPercent / 100))   per row
-itemsSubtotal  = the rounded row subtotals added together
+rowSubtotal    = round(price × quantity × (1 − itemPercent / 100))   per line
+itemsSubtotal  = the rounded line subtotals added together
 additional     = round(itemsSubtotal × additionalPercent / 100)
 subtotalAfter  = round(itemsSubtotal − additional)
 salesTax       = round(subtotalAfter × taxRate / 100)
 finalTotal     = round(subtotalAfter + salesTax)
 ```
 
-Same rule as the two-discount chain: the per-item discounts and the
-additional discount are applied in sequence, never added together. The
-section reuses the sales tax rate from the main calculator rather than
-carrying a second tax field.
+The discounts are applied in sequence, never added together: each line keeps
+its own percentage, the lines are totalled, and only then does the additional
+discount come off that combined subtotal. 25% on a line and a further 25% off
+the subtotal is not 50% off. A single item with two stacked discounts is
+entered as one line plus the additional discount.
+
+Each step rounds to cents and feeds the rounded value into the next step, so
+the numbers shown on screen always add up exactly. Rounding only at the very
+end would shift some totals by a cent, but then the lines on screen would no
+longer add up by hand.
 
 The savings figures shown alongside come from the same numbers:
 

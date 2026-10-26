@@ -131,7 +131,7 @@ body {
   margin-bottom: 16px;
 }
 
-/* The optional second discount, set apart with a light gray background. */
+/* The optional additional discount, set apart with a light gray background. */
 .card--second {
   background: #eceef1;
   border-color: #cfd4da;
@@ -164,15 +164,8 @@ body {
   letter-spacing: 0;
 }
 
-.field-label--sub {
-  text-transform: none;
-  letter-spacing: 0.02em;
-  margin-top: 16px;
-}
-
 /* --- Inputs -------------------------------------------------------------- */
 
-.price-input-wrap,
 .percent-input-wrap {
   display: flex;
   align-items: center;
@@ -182,28 +175,18 @@ body {
   padding: 0 16px;
 }
 
-.price-input-wrap:focus-within,
 .percent-input-wrap:focus-within {
   border-color: var(--navy);
   background: #ffffff;
 }
 
-.currency,
 .percent {
+  margin-left: 6px;
   font-size: 26px;
   font-weight: 600;
   color: var(--gray-text);
 }
 
-.currency {
-  margin-right: 6px;
-}
-
-.percent {
-  margin-left: 6px;
-}
-
-.price-input,
 .percent-input {
   flex: 1;
   width: 100%;
@@ -213,59 +196,15 @@ body {
   background: transparent;
   color: var(--navy);
   font-family: inherit;
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   padding: 14px 0;
 }
 
-.percent-input {
-  font-size: 26px;
-}
-
-.price-input::placeholder,
 .percent-input::placeholder {
   color: #b6bcc5;
   font-weight: 500;
-}
-
-/* --- Discount buttons ---------------------------------------------------- */
-
-.discount-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.discount-btn {
-  min-height: 60px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #ffffff;
-  color: var(--charcoal);
-  font-family: inherit;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.discount-btn--wide {
-  grid-column: 1 / -1;
-}
-
-.discount-btn.is-selected {
-  background: var(--navy);
-  border-color: var(--navy);
-  color: #ffffff;
-}
-
-/* "No Second Discount" is a muted gray when chosen, so a filled navy button
-   always means an actual discount is switched on. */
-.discount-btn[data-discount="none"].is-selected {
-  background: #7c838e;
-  border-color: #7c838e;
 }
 
 /* --- Action buttons ------------------------------------------------------ */
@@ -344,10 +283,6 @@ body {
   white-space: nowrap;
 }
 
-.result-value--minus {
-  color: #9b2c2c;
-}
-
 /* The total sits on its own line so the number can be big enough to read
    from across a counter. */
 .result-total {
@@ -411,72 +346,6 @@ body {
 .math-steps b {
   font-weight: 600;
   color: var(--charcoal);
-}
-
-/* --- Multiple items (collapsible, closed until it is opened) -------------- */
-
-.advanced {
-  margin-top: 28px;
-  background: #eceef1;
-  border: 1px solid #cfd4da;
-  border-radius: var(--radius);
-}
-
-.advanced-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  min-height: 60px;
-  padding: 0 16px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--navy);
-  list-style: none;
-}
-
-.advanced-summary::-webkit-details-marker {
-  display: none;
-}
-
-.advanced-icon {
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  border: 1px solid #b9bfc7;
-  border-radius: 6px;
-  background: #ffffff;
-  color: var(--charcoal);
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 26px;
-  text-align: center;
-}
-
-.advanced-icon::after {
-  content: "+";
-}
-
-.advanced[open] .advanced-icon::after {
-  content: "–";
-}
-
-.advanced-body {
-  padding: 4px 16px 20px;
-  border-top: 1px solid #cfd4da;
-}
-
-.advanced-body .section-note {
-  margin: 14px 0 16px;
-}
-
-.section-note--tight {
-  margin: 14px 0 16px;
-}
-
-.advanced-body .field-label--sub {
-  margin-top: 22px;
 }
 
 /* --- Item rows ----------------------------------------------------------- */
@@ -627,7 +496,12 @@ body {
   white-space: nowrap;
 }
 
-.adv-section-title {
+/* Savings read as a good thing, not as a charge. */
+.result-value--savings {
+  color: var(--savings);
+}
+
+.section-title {
   margin: 16px 0 8px;
   font-size: 11px;
   font-weight: 600;
@@ -636,14 +510,7 @@ body {
   letter-spacing: 0.08em;
 }
 
-/* Savings read as a good thing, not as a charge. */
-.result-value--savings {
-  color: var(--savings);
-}
-
-/* --- Per-item breakdown -------------------------------------------------- */
-
-.adv-breakdown {
+.breakdown {
   margin: 0 0 14px;
   padding: 0;
   list-style: none;
@@ -760,8 +627,8 @@ body {
 
 @media (max-width: 359px) {
   .total-value { font-size: 44px; }
-  .price-input { font-size: 26px; }
-  .discount-btn { font-size: 17px; }
+  
+  
   .item-head,
   .item-row { grid-template-columns: 1.2fr 0.55fr 1.1fr 30px; }
 }

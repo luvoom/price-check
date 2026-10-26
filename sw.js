@@ -15,7 +15,10 @@ var FILES = [
   "index.html",
   "style.css",
   "script.js",
-  "manifest.webmanifest"
+  "manifest.webmanifest",
+  "apple-touch-icon.png",
+  "icon-192.png",
+  "icon-512.png"
 ];
 
 self.addEventListener("install", function (event) {

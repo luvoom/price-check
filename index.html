@@ -8,6 +8,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Price Check">
   <title>Price Check</title>
+
+  <!-- Home Screen and tab icons. Every path here is relative, so the app
+       works just as well in a subfolder (such as a GitHub Pages project
+       site) as it does at the root of a domain. -->
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -25,80 +33,52 @@
 
     <h1 class="title">Price Check</h1>
 
-    <!-- Current Price -->
+    <!-- Items -->
     <section class="card">
-      <label class="field-label" for="price">Current Price</label>
-      <div class="price-input-wrap">
-        <span class="currency">$</span>
+      <span class="field-label">Items</span>
+      <p class="section-note">
+        One line per item. Each item keeps its own discount.
+      </p>
+
+      <div class="item-head">
+        <span>Price</span>
+        <span>Qty</span>
+        <span>Discount</span>
+        <span></span>
+      </div>
+      <div id="itemRows"></div>
+
+      <button type="button" class="btn-secondary btn-secondary--light" id="addItemBtn">
+        + Add Item
+      </button>
+    </section>
+
+    <!-- Additional discount, taken off the combined subtotal -->
+    <section class="card card--second">
+      <span class="field-label">
+        Additional Discount
+        <span class="field-hint">Optional</span>
+      </span>
+      <p class="section-note">
+        Taken off the combined subtotal, after every item discount.
+      </p>
+
+      <div class="chip-row" id="additionalChips">
+        <button type="button" class="chip" data-percent="0">None</button>
+        <button type="button" class="chip" data-percent="10">10%</button>
+        <button type="button" class="chip" data-percent="15">15%</button>
+        <button type="button" class="chip" data-percent="20">20%</button>
+        <button type="button" class="chip" data-percent="25">25%</button>
+      </div>
+      <div class="percent-input-wrap">
         <input
-          id="price"
-          class="price-input"
+          id="additionalDiscount"
+          class="percent-input"
           type="text"
           inputmode="decimal"
           autocomplete="off"
-          placeholder="0.00">
-      </div>
-    </section>
-
-    <!-- First Discount -->
-    <section class="card">
-      <span class="field-label">First Discount</span>
-      <div class="discount-grid" id="discountGrid1">
-        <button type="button" class="discount-btn" data-discount="10">10% OFF</button>
-        <button type="button" class="discount-btn" data-discount="15">15% OFF</button>
-        <button type="button" class="discount-btn" data-discount="20">20% OFF</button>
-        <button type="button" class="discount-btn" data-discount="25">25% OFF</button>
-        <button type="button" class="discount-btn" data-discount="30">30% OFF</button>
-        <button type="button" class="discount-btn" data-discount="35">35% OFF</button>
-        <button type="button" class="discount-btn discount-btn--wide" data-discount="custom">Custom</button>
-      </div>
-
-      <div class="custom-wrap" id="customWrap1" hidden>
-        <label class="field-label field-label--sub" for="customDiscount1">Custom Discount</label>
-        <div class="percent-input-wrap">
-          <input
-            id="customDiscount1"
-            class="percent-input"
-            type="text"
-            inputmode="decimal"
-            autocomplete="off"
-            placeholder="0">
-          <span class="percent">%</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Second Discount (optional, taken off the price the first discount left) -->
-    <section class="card card--second">
-      <span class="field-label">
-        Second Discount
-        <span class="field-hint">Optional</span>
-      </span>
-      <p class="section-note">Taken off the price after the first discount.</p>
-
-      <div class="discount-grid" id="discountGrid2">
-        <button type="button" class="discount-btn discount-btn--wide" data-discount="none">No Second Discount</button>
-        <button type="button" class="discount-btn" data-discount="10">10% OFF</button>
-        <button type="button" class="discount-btn" data-discount="15">15% OFF</button>
-        <button type="button" class="discount-btn" data-discount="20">20% OFF</button>
-        <button type="button" class="discount-btn" data-discount="25">25% OFF</button>
-        <button type="button" class="discount-btn" data-discount="30">30% OFF</button>
-        <button type="button" class="discount-btn" data-discount="35">35% OFF</button>
-        <button type="button" class="discount-btn discount-btn--wide" data-discount="custom">Custom</button>
-      </div>
-
-      <div class="custom-wrap" id="customWrap2" hidden>
-        <label class="field-label field-label--sub" for="customDiscount2">Custom Second Discount</label>
-        <div class="percent-input-wrap">
-          <input
-            id="customDiscount2"
-            class="percent-input"
-            type="text"
-            inputmode="decimal"
-            autocomplete="off"
-            placeholder="0">
-          <span class="percent">%</span>
-        </div>
+          placeholder="0">
+        <span class="percent">%</span>
       </div>
     </section>
 
@@ -124,26 +104,37 @@
 
     <!-- Results -->
     <section class="card results" id="results" hidden>
-      <div class="result-row">
-        <span class="result-label">Original Price</span>
-        <span class="result-value" id="rOriginal">$0.00</span>
+      <div class="original-total">
+        <span class="original-label">Original Total</span>
+        <span class="original-value" id="rOriginal">$0.00</span>
       </div>
+
+      <div class="section-title">Item Breakdown</div>
+      <ul class="breakdown" id="breakdown"></ul>
+
       <div class="result-row">
-        <span class="result-label" id="rDiscountLabel">First Discount</span>
-        <span class="result-value result-value--minus" id="rDiscount">-$0.00</span>
+        <span class="result-label">Items Subtotal</span>
+        <span class="result-value" id="rSubtotal">$0.00</span>
       </div>
-      <div class="result-row">
-        <span class="result-label" id="rAfterLabel">Price After Discount</span>
+      <div class="result-row" id="rItemSavingsRow" hidden>
+        <span class="result-label">Item Discounts Saved</span>
+        <span class="result-value result-value--savings" id="rItemSavings">-$0.00</span>
+      </div>
+      <div class="result-row" id="rDiscountRow" hidden>
+        <span class="result-label" id="rDiscountLabel">Additional Discount</span>
+        <span class="result-value result-value--savings" id="rDiscount">-$0.00</span>
+      </div>
+      <div class="result-row" id="rAfterRow" hidden>
+        <span class="result-label">Subtotal After All Discounts</span>
         <span class="result-value" id="rAfter">$0.00</span>
       </div>
-      <div class="result-row" id="rDiscount2Row" hidden>
-        <span class="result-label" id="rDiscount2Label">Second Discount</span>
-        <span class="result-value result-value--minus" id="rDiscount2">-$0.00</span>
+
+      <div class="savings-box" id="rSavingsBox" hidden>
+        <span class="savings-box-label">Total Savings</span>
+        <span class="savings-box-value" id="rTotalSavings">$0.00</span>
+        <span class="savings-box-note" id="rSavingsPercent">You saved 0%</span>
       </div>
-      <div class="result-row" id="rAfter2Row" hidden>
-        <span class="result-label">Subtotal After Second Discount</span>
-        <span class="result-value" id="rAfter2">$0.00</span>
-      </div>
+
       <div class="result-row">
         <span class="result-label" id="rTaxLabel">Sales Tax</span>
         <span class="result-value" id="rTax">$0.00</span>
@@ -153,6 +144,8 @@
         <span class="total-value" id="rTotal">$0.00</span>
       </div>
 
+      <p class="saved-today" id="rSavedToday" hidden>You saved $0.00 today</p>
+
       <div class="math">
         <div class="math-title">How this was calculated</div>
         <ol class="math-steps" id="mathSteps"></ol>
@@ -160,106 +153,6 @@
     </section>
 
     <button type="button" class="btn-secondary" id="resetBtn">Reset</button>
-
-    <!-- Multiple items. Closed until it is needed, which is not often. -->
-    <details class="advanced" id="advanced">
-      <summary class="advanced-summary">
-        <span>Need to calculate multiple items?</span>
-        <span class="advanced-icon" aria-hidden="true"></span>
-      </summary>
-
-      <div class="advanced-body">
-        <p class="section-note">
-          Each item keeps its own discount. They are added up first, then the
-          additional discount comes off the combined subtotal.
-        </p>
-
-        <div class="item-head">
-          <span>Price</span>
-          <span>Qty</span>
-          <span>Discount</span>
-          <span></span>
-        </div>
-        <div id="itemRows"></div>
-
-        <button type="button" class="btn-secondary btn-secondary--light" id="addItemBtn">
-          + Add Item
-        </button>
-
-        <label class="field-label field-label--sub" for="additionalDiscount">
-          Additional Discount
-        </label>
-        <div class="chip-row" id="additionalChips">
-          <button type="button" class="chip" data-percent="0">None</button>
-          <button type="button" class="chip" data-percent="10">10%</button>
-          <button type="button" class="chip" data-percent="15">15%</button>
-          <button type="button" class="chip" data-percent="20">20%</button>
-          <button type="button" class="chip" data-percent="25">25%</button>
-        </div>
-        <div class="percent-input-wrap">
-          <input
-            id="additionalDiscount"
-            class="percent-input"
-            type="text"
-            inputmode="decimal"
-            autocomplete="off"
-            placeholder="0">
-          <span class="percent">%</span>
-        </div>
-
-        <p class="section-note section-note--tight">
-          Sales tax uses the rate set above.
-        </p>
-
-        <button type="button" class="btn-primary" id="calcAdvBtn">Calculate Total</button>
-
-        <p class="error" id="advError" hidden></p>
-
-        <section class="card results" id="advResults" hidden>
-          <div class="original-total">
-            <span class="original-label">Original Total</span>
-            <span class="original-value" id="aOriginal">$0.00</span>
-          </div>
-
-          <div class="adv-section-title">Item Breakdown</div>
-          <ul class="adv-breakdown" id="advBreakdown"></ul>
-
-          <div class="result-row">
-            <span class="result-label">Items Subtotal</span>
-            <span class="result-value" id="aSubtotal">$0.00</span>
-          </div>
-          <div class="result-row" id="aItemSavingsRow" hidden>
-            <span class="result-label">Item Discounts Saved</span>
-            <span class="result-value result-value--savings" id="aItemSavings">-$0.00</span>
-          </div>
-          <div class="result-row" id="aDiscountRow" hidden>
-            <span class="result-label" id="aDiscountLabel">Additional Discount</span>
-            <span class="result-value result-value--savings" id="aDiscount">-$0.00</span>
-          </div>
-          <div class="result-row" id="aAfterRow" hidden>
-            <span class="result-label">Subtotal After All Discounts</span>
-            <span class="result-value" id="aAfter">$0.00</span>
-          </div>
-
-          <div class="savings-box" id="aSavingsBox" hidden>
-            <span class="savings-box-label">Total Savings</span>
-            <span class="savings-box-value" id="aTotalSavings">$0.00</span>
-            <span class="savings-box-note" id="aSavingsPercent">You saved 0%</span>
-          </div>
-
-          <div class="result-row">
-            <span class="result-label" id="aTaxLabel">Sales Tax</span>
-            <span class="result-value" id="aTax">$0.00</span>
-          </div>
-          <div class="result-total">
-            <span class="total-label">Final Total</span>
-            <span class="total-value" id="aTotal">$0.00</span>
-          </div>
-
-          <p class="saved-today" id="aSavedToday" hidden>You saved $0.00 today</p>
-        </section>
-      </div>
-    </details>
 
   </main>
 

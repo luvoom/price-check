@@ -11,32 +11,29 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.6.1",
+    changes: [
+      "Added a Home Screen app icon: a white P on a dark navy square",
+      "The same icon shows in the browser tab"
+    ]
+  },
+  {
+    version: "0.6.0",
+    changes: [
+      "The item list is now the main screen - nothing to open first",
+      "Removed the separate single-item calculator; one item is simply one line",
+      "Additional Discount and Sales Tax work exactly as before",
+      "Results still show every item, the savings, and the final total"
+    ]
+  },
+  {
     version: "0.5.0",
     changes: [
-      "Multiple-item results now open with the Original Total before any discounts",
+      "Results now open with the Original Total before any discounts",
       "Each item shows what was saved on it and what it comes to after its discount",
       "Added a Total Savings panel with the dollar amount and the overall percentage saved",
       "Added a \"You saved $X today\" line under the Final Total to show a customer",
       "Savings are shown in green so they read as money off, not as a charge"
-    ]
-  },
-  {
-    version: "0.4.0",
-    changes: [
-      "Added a \"Need to calculate multiple items?\" section at the bottom, closed until you open it",
-      "Add as many items as you need, each with its own price, quantity and discount",
-      "An additional discount can be taken off the combined subtotal of all the items",
-      "Results list every item, then the subtotal, additional discount, tax and total",
-      "The Final Total is now much larger and easier to show to a customer"
-    ]
-  },
-  {
-    version: "0.3.0",
-    changes: [
-      "Added an optional Second Discount section below the first one",
-      "The second discount comes off the price the first discount left, not added to it",
-      "Second Discount is off by default and set apart with a gray background",
-      "Results show both discounts and both subtotals on separate lines"
     ]
   }
 ];
@@ -44,29 +41,42 @@ var VERSION_HISTORY = [
 /* Default sales tax rate, used on load and after Reset. */
 var DEFAULT_TAX_RATE = 8.375;
 
+/* The discounts offered in each item's dropdown. */
+var ITEM_DISCOUNT_CHOICES = [0, 10, 15, 20, 25, 30, 35];
+
+/* How many blank item lines the app opens with. */
+var STARTING_ITEM_ROWS = 3;
+
 /* --------------------------------------------------------------------------
    Element references
    -------------------------------------------------------------------------- */
-var priceInput = document.getElementById("price");
+var itemRows = document.getElementById("itemRows");
+var addItemBtn = document.getElementById("addItemBtn");
+var additionalInput = document.getElementById("additionalDiscount");
+var additionalChips = document.querySelectorAll("#additionalChips .chip");
 var taxInput = document.getElementById("tax");
 var calcBtn = document.getElementById("calcBtn");
 var resetBtn = document.getElementById("resetBtn");
 var errorEl = document.getElementById("error");
 var resultsEl = document.getElementById("results");
 
+var breakdown = document.getElementById("breakdown");
 var rOriginal = document.getElementById("rOriginal");
+var rSubtotal = document.getElementById("rSubtotal");
+var rItemSavingsRow = document.getElementById("rItemSavingsRow");
+var rItemSavings = document.getElementById("rItemSavings");
+var rDiscountRow = document.getElementById("rDiscountRow");
 var rDiscount = document.getElementById("rDiscount");
 var rDiscountLabel = document.getElementById("rDiscountLabel");
+var rAfterRow = document.getElementById("rAfterRow");
 var rAfter = document.getElementById("rAfter");
-var rAfterLabel = document.getElementById("rAfterLabel");
-var rDiscount2Row = document.getElementById("rDiscount2Row");
-var rDiscount2 = document.getElementById("rDiscount2");
-var rDiscount2Label = document.getElementById("rDiscount2Label");
-var rAfter2Row = document.getElementById("rAfter2Row");
-var rAfter2 = document.getElementById("rAfter2");
-var rTax = document.getElementById("rTax");
+var rSavingsBox = document.getElementById("rSavingsBox");
+var rTotalSavings = document.getElementById("rTotalSavings");
+var rSavingsPercent = document.getElementById("rSavingsPercent");
 var rTaxLabel = document.getElementById("rTaxLabel");
+var rTax = document.getElementById("rTax");
 var rTotal = document.getElementById("rTotal");
+var rSavedToday = document.getElementById("rSavedToday");
 var mathSteps = document.getElementById("mathSteps");
 
 var versionCurrent = document.getElementById("versionCurrent");
@@ -88,6 +98,11 @@ function parseNumber(text) {
   return Number(cleaned);
 }
 
+/* True when a field was left empty. */
+function isBlank(text) {
+  return text.replace(/\s/g, "") === "";
+}
+
 /* Rounds to cents, e.g. 2.135625 -> 2.14 */
 function roundCents(amount) {
   return Math.round((amount + Number.EPSILON) * 100) / 100;
@@ -104,7 +119,7 @@ function formatPercent(value) {
 }
 
 /* Adds one line to the "How this was calculated" list, e.g.
-   "Discount: $34.00 x 25% = $8.50" with the answer in bold. */
+   "Sales tax: $78.80 x 8.375% = $6.60" with the answer in bold. */
 function addStep(label, expression, result) {
   var item = document.createElement("li");
   item.appendChild(document.createTextNode(label + ": " + expression + " = "));
@@ -150,9 +165,9 @@ function renderVersionHistory() {
 
     var list = document.createElement("ul");
     for (var j = 0; j < entry.changes.length; j++) {
-      var item = document.createElement("li");
-      item.textContent = entry.changes[j];
-      list.appendChild(item);
+      var change = document.createElement("li");
+      change.textContent = entry.changes[j];
+      list.appendChild(change);
     }
     wrap.appendChild(list);
 
@@ -161,238 +176,10 @@ function renderVersionHistory() {
 }
 
 /* --------------------------------------------------------------------------
-   Discount selection
+   Item lines
    -------------------------------------------------------------------------- */
-/* Builds one discount section (buttons + its Custom field). The page has two
-   of these: the first discount and the optional second discount. They behave
-   the same way, so the same code runs both.
 
-   "selected" holds null (nothing chosen), the string "none", the string
-   "custom", or a number such as 25. */
-function createDiscountSection(gridId, customWrapId, customInputId, defaultValue) {
-  var section = {
-    buttons: document.querySelectorAll("#" + gridId + " .discount-btn"),
-    customWrap: document.getElementById(customWrapId),
-    customInput: document.getElementById(customInputId),
-    defaultValue: defaultValue,
-    selected: null
-  };
-
-  section.select = function (value, focusCustom) {
-    section.selected = value;
-
-    for (var i = 0; i < section.buttons.length; i++) {
-      var button = section.buttons[i];
-      if (button.getAttribute("data-discount") === String(value)) {
-        button.classList.add("is-selected");
-        button.setAttribute("aria-pressed", "true");
-      } else {
-        button.classList.remove("is-selected");
-        button.setAttribute("aria-pressed", "false");
-      }
-    }
-
-    section.customWrap.hidden = value !== "custom";
-    if (value === "custom" && focusCustom) {
-      section.customInput.focus();
-    }
-  };
-
-  /* Reads the section as a percentage. Returns null if what was typed into
-     the Custom field is not a usable number. */
-  section.getPercent = function () {
-    if (section.selected === "custom") {
-      var typed = parseNumber(section.customInput.value);
-      if (isNaN(typed) || typed < 0 || typed > 100) {
-        return null;
-      }
-      return typed;
-    }
-    if (typeof section.selected === "number") {
-      return section.selected;
-    }
-    return 0;
-  };
-
-  for (var i = 0; i < section.buttons.length; i++) {
-    section.buttons[i].addEventListener("click", function (event) {
-      var raw = event.currentTarget.getAttribute("data-discount");
-      var value = (raw === "custom" || raw === "none") ? raw : Number(raw);
-
-      /* Tapping the button that is already on returns the section to its
-         starting state. */
-      if (section.selected === value) {
-        section.select(section.defaultValue, false);
-      } else {
-        section.select(value, true);
-      }
-      clearError();
-    });
-  }
-
-  section.select(defaultValue, false);
-  return section;
-}
-
-var firstDiscount = createDiscountSection("discountGrid1", "customWrap1", "customDiscount1", null);
-var secondDiscount = createDiscountSection("discountGrid2", "customWrap2", "customDiscount2", "none");
-
-/* --------------------------------------------------------------------------
-   Calculate
-   -------------------------------------------------------------------------- */
-function calculate() {
-  var price = parseNumber(priceInput.value);
-  if (isNaN(price) || price < 0) {
-    showError("Enter a current price.");
-    priceInput.focus();
-    return;
-  }
-
-  var taxRate = parseNumber(taxInput.value);
-  if (isNaN(taxRate) || taxRate < 0) {
-    showError("Enter a sales tax percentage.");
-    taxInput.focus();
-    return;
-  }
-
-  var firstPercent = firstDiscount.getPercent();
-  if (firstPercent === null) {
-    showError("Enter a first discount between 0 and 100.");
-    firstDiscount.customInput.focus();
-    return;
-  }
-
-  var secondPercent = secondDiscount.getPercent();
-  if (secondPercent === null) {
-    showError("Enter a second discount between 0 and 100.");
-    secondDiscount.customInput.focus();
-    return;
-  }
-
-  clearError();
-
-  /* The second discount comes off whatever the first discount left behind -
-     it is never added to the first one. 25% and then another 25% is NOT 50%
-     off. Every displayed number is rounded to cents and the next step uses
-     that rounded value, so the breakdown on screen always adds up. */
-  var firstAmount = roundCents(price * (firstPercent / 100));
-  var subtotalAfterFirst = roundCents(price - firstAmount);
-  var secondAmount = roundCents(subtotalAfterFirst * (secondPercent / 100));
-  var subtotalAfterSecond = roundCents(subtotalAfterFirst - secondAmount);
-  var salesTax = roundCents(subtotalAfterSecond * (taxRate / 100));
-  var finalTotal = roundCents(subtotalAfterSecond + salesTax);
-
-  var usesSecond = secondPercent > 0;
-
-  rOriginal.textContent = formatMoney(price);
-  rDiscountLabel.textContent = "First Discount (" + formatPercent(firstPercent) + "%)";
-  rDiscount.textContent = "-" + formatMoney(firstAmount);
-  rAfterLabel.textContent = usesSecond
-    ? "Subtotal After First Discount"
-    : "Price After Discount";
-  rAfter.textContent = formatMoney(subtotalAfterFirst);
-
-  rDiscount2Row.hidden = !usesSecond;
-  rAfter2Row.hidden = !usesSecond;
-  if (usesSecond) {
-    rDiscount2Label.textContent = "Second Discount (" + formatPercent(secondPercent) + "%)";
-    rDiscount2.textContent = "-" + formatMoney(secondAmount);
-    rAfter2.textContent = formatMoney(subtotalAfterSecond);
-  }
-
-  rTaxLabel.textContent = "Sales Tax (" + formatPercent(taxRate) + "%)";
-  rTax.textContent = formatMoney(salesTax);
-  rTotal.textContent = formatMoney(finalTotal);
-
-  /* The same four steps written out in plain English, so anyone can check
-     the numbers by hand. */
-  mathSteps.textContent = "";
-  addStep(
-    usesSecond ? "First discount" : "Discount",
-    formatMoney(price) + " × " + formatPercent(firstPercent) + "%",
-    formatMoney(firstAmount)
-  );
-  addStep(
-    usesSecond ? "Subtotal after first discount" : "Price after discount",
-    formatMoney(price) + " − " + formatMoney(firstAmount),
-    formatMoney(subtotalAfterFirst)
-  );
-  if (usesSecond) {
-    addStep(
-      "Second discount",
-      formatMoney(subtotalAfterFirst) + " × " + formatPercent(secondPercent) + "%",
-      formatMoney(secondAmount)
-    );
-    addStep(
-      "Subtotal after second discount",
-      formatMoney(subtotalAfterFirst) + " − " + formatMoney(secondAmount),
-      formatMoney(subtotalAfterSecond)
-    );
-  }
-  addStep(
-    "Sales tax",
-    formatMoney(subtotalAfterSecond) + " × " + formatPercent(taxRate) + "%",
-    formatMoney(salesTax)
-  );
-  addStep(
-    "Final total",
-    formatMoney(subtotalAfterSecond) + " + " + formatMoney(salesTax),
-    formatMoney(finalTotal)
-  );
-
-  resultsEl.hidden = false;
-}
-
-/* ==========================================================================
-   MULTIPLE ITEMS
-   An optional second calculator, kept closed until it is opened. Several
-   items, each with its own discount, are added up first; the additional
-   discount then comes off that combined subtotal, and tax comes off what is
-   left. The item discounts and the additional discount are never added
-   together.
-   ========================================================================== */
-
-var ITEM_DISCOUNT_CHOICES = [0, 10, 15, 20, 25, 30, 35];
-var STARTING_ITEM_ROWS = 3;
-
-var itemRows = document.getElementById("itemRows");
-var addItemBtn = document.getElementById("addItemBtn");
-var additionalInput = document.getElementById("additionalDiscount");
-var additionalChips = document.querySelectorAll("#additionalChips .chip");
-var calcAdvBtn = document.getElementById("calcAdvBtn");
-var advError = document.getElementById("advError");
-var advResults = document.getElementById("advResults");
-var advBreakdown = document.getElementById("advBreakdown");
-
-var aOriginal = document.getElementById("aOriginal");
-var aSubtotal = document.getElementById("aSubtotal");
-var aItemSavingsRow = document.getElementById("aItemSavingsRow");
-var aItemSavings = document.getElementById("aItemSavings");
-var aSavingsBox = document.getElementById("aSavingsBox");
-var aTotalSavings = document.getElementById("aTotalSavings");
-var aSavingsPercent = document.getElementById("aSavingsPercent");
-var aSavedToday = document.getElementById("aSavedToday");
-var aDiscountRow = document.getElementById("aDiscountRow");
-var aDiscount = document.getElementById("aDiscount");
-var aDiscountLabel = document.getElementById("aDiscountLabel");
-var aAfterRow = document.getElementById("aAfterRow");
-var aAfter = document.getElementById("aAfter");
-var aTax = document.getElementById("aTax");
-var aTaxLabel = document.getElementById("aTaxLabel");
-var aTotal = document.getElementById("aTotal");
-
-function showAdvError(message) {
-  advError.textContent = message;
-  advError.hidden = false;
-  advResults.hidden = true;
-}
-
-function clearAdvError() {
-  advError.textContent = "";
-  advError.hidden = true;
-}
-
-/* Builds one item row: price, quantity, discount, and a remove button. */
+/* Builds one item line: price, quantity, discount, and a remove button. */
 function createItemRow() {
   var row = document.createElement("div");
   row.className = "item-row";
@@ -467,22 +254,22 @@ function createItemRow() {
     if (select.value === "custom") {
       customInput.focus();
     }
-    clearAdvError();
+    clearError();
   });
 
   remove.addEventListener("click", function () {
-    /* Always leave at least one row to type into. */
+    /* Always leave at least one line to type into. */
     if (itemRows.querySelectorAll(".item-row").length <= 1) {
       price.value = "";
       qty.value = "";
       select.value = "0";
       customInput.value = "";
       customWrap.hidden = true;
-      clearAdvError();
+      clearError();
       return;
     }
     row.parentNode.removeChild(row);
-    clearAdvError();
+    clearError();
   });
 
   return row;
@@ -499,52 +286,20 @@ function resetItemRows() {
   }
 }
 
-/* Keeps the chip that matches the typed percentage switched on. */
-function syncAdditionalChips() {
-  var typed = parseNumber(additionalInput.value);
-  if (additionalInput.value.replace(/\s/g, "") === "") {
-    typed = 0;
-  }
-  for (var i = 0; i < additionalChips.length; i++) {
-    var chip = additionalChips[i];
-    var matches = Number(chip.getAttribute("data-percent")) === typed;
-    if (matches) {
-      chip.classList.add("is-selected");
-      chip.setAttribute("aria-pressed", "true");
-    } else {
-      chip.classList.remove("is-selected");
-      chip.setAttribute("aria-pressed", "false");
-    }
-  }
-}
-
-for (var chipIndex = 0; chipIndex < additionalChips.length; chipIndex++) {
-  additionalChips[chipIndex].addEventListener("click", function (event) {
-    additionalInput.value = event.currentTarget.getAttribute("data-percent");
-    syncAdditionalChips();
-    clearAdvError();
-  });
-}
-
-additionalInput.addEventListener("input", function () {
-  syncAdditionalChips();
-  clearAdvError();
-});
-
 addItemBtn.addEventListener("click", function () {
   addItemRow();
-  clearAdvError();
+  clearError();
 });
 
-/* Reads one row. Returns "empty" when no price was typed, null when
-   something typed cannot be used, or the finished numbers for that row. */
+/* Reads one line. Returns "empty" when no price was typed, null when
+   something typed cannot be used, or the finished numbers for that line. */
 function readItemRow(row) {
   var priceField = row.querySelector(".item-price");
   var qtyField = row.querySelector(".item-qty");
   var selectField = row.querySelector(".item-discount");
   var customField = row.querySelector(".item-custom-percent");
 
-  if (priceField.value.replace(/\s/g, "") === "") {
+  if (isBlank(priceField.value)) {
     return "empty";
   }
 
@@ -554,7 +309,7 @@ function readItemRow(row) {
   }
 
   var quantity = 1;
-  if (qtyField.value.replace(/\s/g, "") !== "") {
+  if (!isBlank(qtyField.value)) {
     quantity = parseNumber(qtyField.value);
     if (isNaN(quantity) || quantity < 1) {
       return null;
@@ -584,6 +339,43 @@ function readItemRow(row) {
     saved: roundCents(original - subtotal)
   };
 }
+
+/* --------------------------------------------------------------------------
+   Additional discount chips
+   -------------------------------------------------------------------------- */
+
+/* Keeps the chip that matches the typed percentage switched on. */
+function syncAdditionalChips() {
+  var typed = isBlank(additionalInput.value) ? 0 : parseNumber(additionalInput.value);
+
+  for (var i = 0; i < additionalChips.length; i++) {
+    var chip = additionalChips[i];
+    if (Number(chip.getAttribute("data-percent")) === typed) {
+      chip.classList.add("is-selected");
+      chip.setAttribute("aria-pressed", "true");
+    } else {
+      chip.classList.remove("is-selected");
+      chip.setAttribute("aria-pressed", "false");
+    }
+  }
+}
+
+for (var chipIndex = 0; chipIndex < additionalChips.length; chipIndex++) {
+  additionalChips[chipIndex].addEventListener("click", function (event) {
+    additionalInput.value = event.currentTarget.getAttribute("data-percent");
+    syncAdditionalChips();
+    clearError();
+  });
+}
+
+additionalInput.addEventListener("input", function () {
+  syncAdditionalChips();
+  clearError();
+});
+
+/* --------------------------------------------------------------------------
+   Item breakdown
+   -------------------------------------------------------------------------- */
 
 /* Builds one block of the item breakdown:
 
@@ -620,7 +412,7 @@ function addBreakdownLine(item) {
     line.appendChild(buildLineRow("Price", formatMoney(item.subtotal), false));
   }
 
-  advBreakdown.appendChild(line);
+  breakdown.appendChild(line);
 }
 
 function buildLineRow(label, value, isSavings) {
@@ -641,19 +433,22 @@ function buildLineRow(label, value, isSavings) {
   return row;
 }
 
-function calculateAdvanced() {
+/* --------------------------------------------------------------------------
+   Calculate
+   -------------------------------------------------------------------------- */
+function calculate() {
   var taxRate = parseNumber(taxInput.value);
   if (isNaN(taxRate) || taxRate < 0) {
-    showAdvError("Enter a sales tax percentage above.");
+    showError("Enter a sales tax percentage.");
     taxInput.focus();
     return;
   }
 
   var additionalPercent = 0;
-  if (additionalInput.value.replace(/\s/g, "") !== "") {
+  if (!isBlank(additionalInput.value)) {
     additionalPercent = parseNumber(additionalInput.value);
     if (isNaN(additionalPercent) || additionalPercent < 0 || additionalPercent > 100) {
-      showAdvError("Enter an additional discount between 0 and 100.");
+      showError("Enter an additional discount between 0 and 100.");
       additionalInput.focus();
       return;
     }
@@ -664,7 +459,7 @@ function calculateAdvanced() {
   for (var i = 0; i < rows.length; i++) {
     var item = readItemRow(rows[i]);
     if (item === null) {
-      showAdvError("Check the price, quantity and discount on item " + (i + 1) + ".");
+      showError("Check the price, quantity and discount on item " + (i + 1) + ".");
       return;
     }
     if (item !== "empty") {
@@ -673,15 +468,15 @@ function calculateAdvanced() {
   }
 
   if (items.length === 0) {
-    showAdvError("Enter a price for at least one item.");
+    showError("Enter a price for at least one item.");
     return;
   }
 
-  clearAdvError();
+  clearError();
 
-  /* Each row is rounded to cents on its own, then the rows are added up. The
-     additional discount comes off that combined subtotal - it is never added
-     to the individual item discounts. */
+  /* Each line is rounded to cents on its own, then the lines are added up.
+     The additional discount comes off that combined subtotal - it is never
+     added to the individual item discounts. */
   var originalTotal = 0;
   var itemsSubtotal = 0;
   for (var j = 0; j < items.length; j++) {
@@ -700,75 +495,92 @@ function calculateAdvanced() {
   var salesTax = roundCents(subtotalAfter * (taxRate / 100));
   var finalTotal = roundCents(subtotalAfter + salesTax);
 
-  aOriginal.textContent = formatMoney(originalTotal);
+  rOriginal.textContent = formatMoney(originalTotal);
 
-  advBreakdown.textContent = "";
+  breakdown.textContent = "";
   for (var k = 0; k < items.length; k++) {
     addBreakdownLine(items[k]);
   }
 
-  aSubtotal.textContent = formatMoney(itemsSubtotal);
+  rSubtotal.textContent = formatMoney(itemsSubtotal);
 
-  aItemSavingsRow.hidden = itemSavings <= 0;
-  aItemSavings.textContent = "-" + formatMoney(itemSavings);
+  rItemSavingsRow.hidden = itemSavings <= 0;
+  rItemSavings.textContent = "-" + formatMoney(itemSavings);
 
   var usesAdditional = additionalPercent > 0;
-  aDiscountRow.hidden = !usesAdditional;
-  aAfterRow.hidden = !usesAdditional;
+  rDiscountRow.hidden = !usesAdditional;
+  rAfterRow.hidden = !usesAdditional;
   if (usesAdditional) {
-    aDiscountLabel.textContent = "Additional Discount (" + formatPercent(additionalPercent) + "%)";
-    aDiscount.textContent = "-" + formatMoney(additionalAmount);
-    aAfter.textContent = formatMoney(subtotalAfter);
+    rDiscountLabel.textContent = "Additional Discount (" + formatPercent(additionalPercent) + "%)";
+    rDiscount.textContent = "-" + formatMoney(additionalAmount);
+    rAfter.textContent = formatMoney(subtotalAfter);
   }
 
-  aSavingsBox.hidden = totalSavings <= 0;
-  aSavedToday.hidden = totalSavings <= 0;
+  rSavingsBox.hidden = totalSavings <= 0;
+  rSavedToday.hidden = totalSavings <= 0;
   if (totalSavings > 0) {
-    aTotalSavings.textContent = formatMoney(totalSavings);
-    aSavingsPercent.textContent = "You saved " + savingsPercent.toFixed(1) + "%";
-    aSavedToday.textContent = "You saved " + formatMoney(totalSavings) + " today";
+    rTotalSavings.textContent = formatMoney(totalSavings);
+    rSavingsPercent.textContent = "You saved " + savingsPercent.toFixed(1) + "%";
+    rSavedToday.textContent = "You saved " + formatMoney(totalSavings) + " today";
   }
 
-  aTaxLabel.textContent = "Sales Tax (" + formatPercent(taxRate) + "%)";
-  aTax.textContent = formatMoney(salesTax);
-  aTotal.textContent = formatMoney(finalTotal);
+  rTaxLabel.textContent = "Sales Tax (" + formatPercent(taxRate) + "%)";
+  rTax.textContent = formatMoney(salesTax);
+  rTotal.textContent = formatMoney(finalTotal);
 
-  advResults.hidden = false;
+  /* The same steps written out in plain English, so anyone can check the
+     numbers by hand. */
+  mathSteps.textContent = "";
+
+  var itemTotals = [];
+  for (var m = 0; m < items.length; m++) {
+    itemTotals.push(formatMoney(items[m].subtotal));
+  }
+  addStep(
+    "Items subtotal",
+    itemTotals.length <= 5
+      ? itemTotals.join(" + ")
+      : "the " + itemTotals.length + " item totals added up",
+    formatMoney(itemsSubtotal)
+  );
+
+  if (usesAdditional) {
+    addStep(
+      "Additional discount",
+      formatMoney(itemsSubtotal) + " × " + formatPercent(additionalPercent) + "%",
+      formatMoney(additionalAmount)
+    );
+    addStep(
+      "Subtotal after all discounts",
+      formatMoney(itemsSubtotal) + " − " + formatMoney(additionalAmount),
+      formatMoney(subtotalAfter)
+    );
+  }
+
+  addStep(
+    "Sales tax",
+    formatMoney(subtotalAfter) + " × " + formatPercent(taxRate) + "%",
+    formatMoney(salesTax)
+  );
+  addStep(
+    "Final total",
+    formatMoney(subtotalAfter) + " + " + formatMoney(salesTax),
+    formatMoney(finalTotal)
+  );
+
+  resultsEl.hidden = false;
 }
 
-calcAdvBtn.addEventListener("click", calculateAdvanced);
-additionalInput.addEventListener("keydown", function (event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    calculateAdvanced();
-  }
-});
-
-resetItemRows();
-syncAdditionalChips();
-
 /* --------------------------------------------------------------------------
-   Reset - clears price and discount, keeps the default tax rate
+   Reset - clears the items and discounts, keeps the default tax rate
    -------------------------------------------------------------------------- */
 function reset() {
-  priceInput.value = "";
-  firstDiscount.customInput.value = "";
-  secondDiscount.customInput.value = "";
-  taxInput.value = formatPercent(DEFAULT_TAX_RATE);
-  firstDiscount.select(null, false);
-  secondDiscount.select("none", false);
-  clearError();
-  resultsEl.hidden = true;
-
-  /* Clear the multiple-items section too, so Reset always means a clean
-     slate. Its panel is left open or closed exactly as it was. */
   resetItemRows();
   additionalInput.value = "";
   syncAdditionalChips();
-  clearAdvError();
-  advResults.hidden = true;
-
-  priceInput.focus();
+  taxInput.value = formatPercent(DEFAULT_TAX_RATE);
+  clearError();
+  resultsEl.hidden = true;
 }
 
 /* --------------------------------------------------------------------------
@@ -784,15 +596,15 @@ function calculateOnEnter(event) {
     calculate();
   }
 }
-priceInput.addEventListener("keydown", calculateOnEnter);
 taxInput.addEventListener("keydown", calculateOnEnter);
-firstDiscount.customInput.addEventListener("keydown", calculateOnEnter);
-secondDiscount.customInput.addEventListener("keydown", calculateOnEnter);
+additionalInput.addEventListener("keydown", calculateOnEnter);
 
 /* --------------------------------------------------------------------------
    Start up
    -------------------------------------------------------------------------- */
 taxInput.value = formatPercent(DEFAULT_TAX_RATE);
+resetItemRows();
+syncAdditionalChips();
 renderVersionHistory();
 
 /* Registers the offline cache. Skipped when opened straight from a file,
