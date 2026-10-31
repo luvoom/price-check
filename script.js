@@ -11,12 +11,20 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.9.1",
+    changes: [
+      "The Language menu now sits at the top of the screen, so it is there as soon as the app opens",
+      "Before, it only appeared after you pressed Calculate Total",
+      "Picking a language there also changes the Currency Conversion button straight away"
+    ]
+  },
+  {
     version: "0.9.0",
     changes: [
       "The Currency Conversion button is now large and easy to spot at the bottom of the screen",
       "It also shows its own words in the language you picked, so a customer can read it and ask — and anyone who does not need it can ignore it",
       "Languages went from 8 to 15: added 繁體中文, Italiano, Русский, العربية, हिन्दी, ไทย and Tiếng Việt",
-      "The results can now be shown in all 15 languages: pick one from the new Language menu at the top of the results",
+      "The results can now be shown in all 15 languages: pick one from the new Language menu",
       "Both screens share the language, so choosing it once is enough",
       "Added Thai baht, Vietnamese dong, Russian ruble and UAE dirham"
     ]
@@ -31,14 +39,7 @@ var VERSION_HISTORY = [
       "You can type your own exchange rate when you need to, and switch back with one tap",
       "The price calculator itself still works with no signal"
     ]
-  },
-  {
-    version: "0.7.1",
-    changes: [
-      "Opening the app now loads the newest version straight away when you have a signal",
-      "With no signal it still opens instantly from the copy saved on the phone"
-    ]
-  },
+  }
 ];
 
 /* Default sales tax rate, used on load and after Reset. */
@@ -91,6 +92,7 @@ var versionCurrent = document.getElementById("versionCurrent");
 var versionBody = document.getElementById("versionBody");
 
 var resultLanguage = document.getElementById("resultLanguage");
+var langRow = document.getElementById("langRow");
 
 /* The last set of numbers worked out, kept so the results can be drawn
    again in another language without recalculating anything. */
@@ -644,6 +646,7 @@ resultLanguage.addEventListener("change", function () {
 
 onLanguageChange(function () {
   resultLanguage.value = appLanguage;
+  applyTranslations(langRow);
   applyTranslations(resultsEl);
   applyDirection(resultsEl);
   renderResults();

@@ -38,6 +38,14 @@
 
       <h1 class="title">Price Check</h1>
 
+      <!-- Language for everything shown to the customer: the results below
+           and the Currency Conversion screen. Kept up here so it is there
+           before anything is calculated, not buried in the results. -->
+      <div class="lang-row" id="langRow">
+        <label class="lang-row-label" for="resultLanguage" data-i18n="language">Language</label>
+        <select id="resultLanguage" class="lang-select"></select>
+      </div>
+
       <!-- Items -->
       <section class="card">
         <span class="field-label">Items</span>
@@ -110,13 +118,6 @@
       <!-- Results. Everything inside here is translated, because this is
            the part turned round and shown to the customer. -->
       <section class="card results" id="results" hidden>
-
-        <!-- Language for the results, shared with the Currency screen -->
-        <div class="result-lang">
-          <label class="result-lang-label" for="resultLanguage" data-i18n="language">Language</label>
-          <select id="resultLanguage" class="lang-select"></select>
-        </div>
-
         <div class="original-total">
           <span class="original-label" data-i18n="originalTotal">Original Total</span>
           <span class="original-value" id="rOriginal">$0.00</span>

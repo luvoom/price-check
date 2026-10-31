@@ -665,18 +665,23 @@ body {
   color: var(--charcoal);
 }
 
-/* --- Language picker above the results ----------------------------------- */
+/* --- Language picker, under the title ------------------------------------ */
 
-.result-lang {
+/* Sits above everything so it is there before a calculation, not hidden
+   inside the results. It sets the language of the results below and of the
+   Currency Conversion screen at the same time. */
+.lang-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-bottom: 14px;
-  margin-bottom: 14px;
-  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
 
-.result-lang-label {
+.lang-row-label {
   flex: 0 0 auto;
   font-size: 12px;
   font-weight: 600;

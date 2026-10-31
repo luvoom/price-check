@@ -13,11 +13,16 @@ only the currency converter asks for a live exchange rate.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.9.1
+- The Language menu now sits at the top of the screen, so it is there as soon as the app opens
+- Before, it only appeared after you pressed Calculate Total
+- Picking a language there also changes the Currency Conversion button straight away
+
 ### Version 0.9.0
 - The Currency Conversion button is now large and easy to spot at the bottom of the screen
 - It also shows its own words in the language you picked, so a customer can read it and ask — and anyone who does not need it can ignore it
 - Languages went from 8 to 15: added 繁體中文, Italiano, Русский, العربية, हिन्दी, ไทย and Tiếng Việt
-- The results can now be shown in all 15 languages: pick one from the new Language menu at the top of the results
+- The results can now be shown in all 15 languages: pick one from the new Language menu
 - Both screens share the language, so choosing it once is enough
 - Added Thai baht, Vietnamese dong, Russian ruble and UAE dirham
 
@@ -28,10 +33,6 @@ source of truth. Update that list first, then copy it here.)*
 - The customer can tap their own language: English, Español, 中文, 日本語, 한국어, Français, Português or Deutsch
 - You can type your own exchange rate when you need to, and switch back with one tap
 - The price calculator itself still works with no signal
-
-### Version 0.7.1
-- Opening the app now loads the newest version straight away when you have a signal
-- With no signal it still opens instantly from the copy saved on the phone
 
 
 
@@ -159,9 +160,14 @@ and `tf(key, value)` fills the `{0}` in strings such as `"You saved {0} today"`.
 
 Both screens share `appLanguage`. `setLanguage()` is the only way it changes,
 and it calls every listener registered through `onLanguageChange()` —
-script.js redraws the results panel, currency.js redraws its view and the
-button label. So the Language menu above the results and the language buttons
-on the converter are two ways into the same setting.
+script.js redraws `#langRow` and the results panel, currency.js redraws its
+view and the button label. So the Language menu and the language buttons on
+the converter are two ways into the same setting.
+
+`#langRow` sits directly under the title rather than inside `#results`,
+because `#results` carries `hidden` until a calculation has been made: in the
+results card the menu could not be found, or used, until Calculate Total had
+been pressed.
 
 Labels carry `data-i18n="key"` in the markup and `applyTranslations(root)`
 fills them. Anything with a number in it — `Sales Tax (8.375%)`,
