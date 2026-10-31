@@ -22,6 +22,7 @@ var FILES = [
   "./",
   "index.html",
   "style.css",
+  "i18n.js",
   "script.js",
   "currency.js",
   "manifest.webmanifest",

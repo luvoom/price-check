@@ -11,6 +11,17 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.9.0",
+    changes: [
+      "The Currency Conversion button is now large and easy to spot at the bottom of the screen",
+      "It also shows its own words in the language you picked, so a customer can read it and ask — and anyone who does not need it can ignore it",
+      "Languages went from 8 to 15: added 繁體中文, Italiano, Русский, العربية, हिन्दी, ไทย and Tiếng Việt",
+      "The results can now be shown in all 15 languages: pick one from the new Language menu at the top of the results",
+      "Both screens share the language, so choosing it once is enough",
+      "Added Thai baht, Vietnamese dong, Russian ruble and UAE dirham"
+    ]
+  },
+  {
     version: "0.8.0",
     changes: [
       "Added a Currency Conversion screen you can turn around and show the customer",
@@ -28,13 +39,6 @@ var VERSION_HISTORY = [
       "With no signal it still opens instantly from the copy saved on the phone"
     ]
   },
-  {
-    version: "0.7.0",
-    changes: [
-      "Each item's discount list now goes up to 50% off",
-      "Added 40%, 45% and 50% to the choices"
-    ]
-  }
 ];
 
 /* Default sales tax rate, used on load and after Reset. */
@@ -85,6 +89,12 @@ var mathSteps = document.getElementById("mathSteps");
 
 var versionCurrent = document.getElementById("versionCurrent");
 var versionBody = document.getElementById("versionBody");
+
+var resultLanguage = document.getElementById("resultLanguage");
+
+/* The last set of numbers worked out, kept so the results can be drawn
+   again in another language without recalculating anything. */
+var lastResult = null;
 
 /* --------------------------------------------------------------------------
    Helpers
@@ -403,17 +413,17 @@ function addBreakdownLine(item) {
     ? "item-line-badge"
     : "item-line-badge item-line-badge--plain";
   badge.textContent = item.percent > 0
-    ? formatPercent(item.percent) + "% off"
-    : "Full price";
+    ? tf("percentOff", formatPercent(item.percent))
+    : t("fullPrice");
   head.appendChild(badge);
 
   line.appendChild(head);
 
   if (item.percent > 0) {
-    line.appendChild(buildLineRow("Saved", formatMoney(item.saved), true));
-    line.appendChild(buildLineRow("After discount", formatMoney(item.subtotal), false));
+    line.appendChild(buildLineRow(t("lineSaved"), formatMoney(item.saved), true));
+    line.appendChild(buildLineRow(t("lineAfterDiscount"), formatMoney(item.subtotal), false));
   } else {
-    line.appendChild(buildLineRow("Price", formatMoney(item.subtotal), false));
+    line.appendChild(buildLineRow(t("linePrice"), formatMoney(item.subtotal), false));
   }
 
   breakdown.appendChild(line);
@@ -499,84 +509,145 @@ function calculate() {
   var salesTax = roundCents(subtotalAfter * (taxRate / 100));
   var finalTotal = roundCents(subtotalAfter + salesTax);
 
-  rOriginal.textContent = formatMoney(originalTotal);
+  /* Everything worked out is kept together, so the panel can be drawn
+     again in another language without touching the numbers. */
+  lastResult = {
+    items: items,
+    originalTotal: originalTotal,
+    itemsSubtotal: itemsSubtotal,
+    itemSavings: itemSavings,
+    additionalPercent: additionalPercent,
+    additionalAmount: additionalAmount,
+    subtotalAfter: subtotalAfter,
+    totalSavings: totalSavings,
+    savingsPercent: savingsPercent,
+    taxRate: taxRate,
+    salesTax: salesTax,
+    finalTotal: finalTotal
+  };
 
-  breakdown.textContent = "";
-  for (var k = 0; k < items.length; k++) {
-    addBreakdownLine(items[k]);
-  }
-
-  rSubtotal.textContent = formatMoney(itemsSubtotal);
-
-  rItemSavingsRow.hidden = itemSavings <= 0;
-  rItemSavings.textContent = "-" + formatMoney(itemSavings);
-
-  var usesAdditional = additionalPercent > 0;
-  rDiscountRow.hidden = !usesAdditional;
-  rAfterRow.hidden = !usesAdditional;
-  if (usesAdditional) {
-    rDiscountLabel.textContent = "Additional Discount (" + formatPercent(additionalPercent) + "%)";
-    rDiscount.textContent = "-" + formatMoney(additionalAmount);
-    rAfter.textContent = formatMoney(subtotalAfter);
-  }
-
-  rSavingsBox.hidden = totalSavings <= 0;
-  rSavedToday.hidden = totalSavings <= 0;
-  if (totalSavings > 0) {
-    rTotalSavings.textContent = formatMoney(totalSavings);
-    rSavingsPercent.textContent = "You saved " + savingsPercent.toFixed(1) + "%";
-    rSavedToday.textContent = "You saved " + formatMoney(totalSavings) + " today";
-  }
-
-  rTaxLabel.textContent = "Sales Tax (" + formatPercent(taxRate) + "%)";
-  rTax.textContent = formatMoney(salesTax);
-  rTotal.textContent = formatMoney(finalTotal);
-
-  /* The same steps written out in plain English, so anyone can check the
-     numbers by hand. */
-  mathSteps.textContent = "";
-
-  var itemTotals = [];
-  for (var m = 0; m < items.length; m++) {
-    itemTotals.push(formatMoney(items[m].subtotal));
-  }
-  addStep(
-    "Items subtotal",
-    itemTotals.length <= 5
-      ? itemTotals.join(" + ")
-      : "the " + itemTotals.length + " item totals added up",
-    formatMoney(itemsSubtotal)
-  );
-
-  if (usesAdditional) {
-    addStep(
-      "Additional discount",
-      formatMoney(itemsSubtotal) + " × " + formatPercent(additionalPercent) + "%",
-      formatMoney(additionalAmount)
-    );
-    addStep(
-      "Subtotal after all discounts",
-      formatMoney(itemsSubtotal) + " − " + formatMoney(additionalAmount),
-      formatMoney(subtotalAfter)
-    );
-  }
-
-  addStep(
-    "Sales tax",
-    formatMoney(subtotalAfter) + " × " + formatPercent(taxRate) + "%",
-    formatMoney(salesTax)
-  );
-  addStep(
-    "Final total",
-    formatMoney(subtotalAfter) + " + " + formatMoney(salesTax),
-    formatMoney(finalTotal)
-  );
-
+  renderResults();
   resultsEl.hidden = false;
 
   /* Hand the total to the Currency Conversion screen. */
   window.PriceCheck.finalTotal = finalTotal;
 }
+
+/* --------------------------------------------------------------------------
+   Drawing the results
+   Separate from the arithmetic above so that choosing another language
+   redraws the panel from the same numbers.
+   -------------------------------------------------------------------------- */
+function renderResults() {
+  if (lastResult === null) {
+    return;
+  }
+  var r = lastResult;
+
+  /* The fixed labels, and which way round the panel reads. */
+  applyTranslations(resultsEl);
+  applyDirection(resultsEl);
+
+  rOriginal.textContent = formatMoney(r.originalTotal);
+
+  breakdown.textContent = "";
+  for (var k = 0; k < r.items.length; k++) {
+    addBreakdownLine(r.items[k]);
+  }
+
+  rSubtotal.textContent = formatMoney(r.itemsSubtotal);
+
+  rItemSavingsRow.hidden = r.itemSavings <= 0;
+  rItemSavings.textContent = "-" + formatMoney(r.itemSavings);
+
+  var usesAdditional = r.additionalPercent > 0;
+  rDiscountRow.hidden = !usesAdditional;
+  rAfterRow.hidden = !usesAdditional;
+  if (usesAdditional) {
+    rDiscountLabel.textContent =
+      t("additionalDiscount") + " (" + formatPercent(r.additionalPercent) + "%)";
+    rDiscount.textContent = "-" + formatMoney(r.additionalAmount);
+    rAfter.textContent = formatMoney(r.subtotalAfter);
+  }
+
+  rSavingsBox.hidden = r.totalSavings <= 0;
+  rSavedToday.hidden = r.totalSavings <= 0;
+  if (r.totalSavings > 0) {
+    rTotalSavings.textContent = formatMoney(r.totalSavings);
+    rSavingsPercent.textContent = tf("youSavedPercent", r.savingsPercent.toFixed(1) + "%");
+    rSavedToday.textContent = tf("youSavedToday", formatMoney(r.totalSavings));
+  }
+
+  rTaxLabel.textContent = t("salesTax") + " (" + formatPercent(r.taxRate) + "%)";
+  rTax.textContent = formatMoney(r.salesTax);
+  rTotal.textContent = formatMoney(r.finalTotal);
+
+  /* The same steps written out in words, so anyone can check the numbers
+     by hand. The sums stay in digits; only the labels change language. */
+  mathSteps.textContent = "";
+
+  var itemTotals = [];
+  for (var m = 0; m < r.items.length; m++) {
+    itemTotals.push(formatMoney(r.items[m].subtotal));
+  }
+  addStep(
+    t("stepItemsSubtotal"),
+    itemTotals.length <= 5
+      ? itemTotals.join(" + ")
+      : tf("stepManyItems", itemTotals.length),
+    formatMoney(r.itemsSubtotal)
+  );
+
+  if (usesAdditional) {
+    addStep(
+      t("stepAdditional"),
+      formatMoney(r.itemsSubtotal) + " × " + formatPercent(r.additionalPercent) + "%",
+      formatMoney(r.additionalAmount)
+    );
+    addStep(
+      t("stepSubtotalAfter"),
+      formatMoney(r.itemsSubtotal) + " − " + formatMoney(r.additionalAmount),
+      formatMoney(r.subtotalAfter)
+    );
+  }
+
+  addStep(
+    t("stepSalesTax"),
+    formatMoney(r.subtotalAfter) + " × " + formatPercent(r.taxRate) + "%",
+    formatMoney(r.salesTax)
+  );
+  addStep(
+    t("stepFinalTotal"),
+    formatMoney(r.subtotalAfter) + " + " + formatMoney(r.salesTax),
+    formatMoney(r.finalTotal)
+  );
+}
+
+/* --------------------------------------------------------------------------
+   The language picker above the results
+   One language setting covers both screens, so picking Japanese here also
+   opens the Currency Conversion screen in Japanese, and the other way round.
+   -------------------------------------------------------------------------- */
+function buildLanguageSelect() {
+  for (var i = 0; i < LANGUAGES.length; i++) {
+    var option = document.createElement("option");
+    option.value = LANGUAGES[i].code;
+    option.textContent = LANGUAGES[i].name;
+    resultLanguage.appendChild(option);
+  }
+  resultLanguage.value = appLanguage;
+}
+
+resultLanguage.addEventListener("change", function () {
+  setLanguage(resultLanguage.value);
+});
+
+onLanguageChange(function () {
+  resultLanguage.value = appLanguage;
+  applyTranslations(resultsEl);
+  applyDirection(resultsEl);
+  renderResults();
+});
 
 /* --------------------------------------------------------------------------
    Reset - clears the items and discounts, keeps the default tax rate
@@ -588,6 +659,7 @@ function reset() {
   taxInput.value = formatPercent(DEFAULT_TAX_RATE);
   clearError();
   resultsEl.hidden = true;
+  lastResult = null;
   window.PriceCheck.finalTotal = null;
 }
 
@@ -614,6 +686,7 @@ taxInput.value = formatPercent(DEFAULT_TAX_RATE);
 resetItemRows();
 syncAdditionalChips();
 renderVersionHistory();
+buildLanguageSelect();
 
 /* Registers the offline cache. Skipped when opened straight from a file,
    which is fine - the app still works, it just is not cached. */

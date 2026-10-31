@@ -4,223 +4,9 @@
 
    Kept apart from script.js on purpose: this is the only part of the app
    that touches the internet, and the main calculator never waits for it.
+   Every word shown here comes from i18n.js, which loads first.
    Plain (vanilla) JavaScript only - no frameworks, no libraries.
    ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   TRANSLATIONS  --  SINGLE SOURCE OF TRUTH
-   One block per language, same keys in each. English is the fallback: any
-   key missing from a language falls back to the English wording, so a gap
-   shows readable text rather than nothing. Nothing here is fetched or
-   translated at run time.
-   -------------------------------------------------------------------------- */
-var TRANSLATIONS = {
-  en: {
-    chooseLanguage: "Choose your language",
-    title: "Currency Conversion",
-    usdAmount: "USD Amount",
-    selectCurrency: "Select Currency",
-    selectPrompt: "Choose a currency",
-    exchangeRate: "Exchange Rate",
-    lastUpdated: "Last Updated",
-    usdTotal: "USD Total",
-    customerPrice: "Customer Price",
-    back: "Back to Price Check",
-    loading: "Loading…",
-    rateError: "Unable to retrieve exchange rate",
-    tryAgain: "Try Again",
-    disclaimer: "Estimated conversion. Your bank or card issuer may use a different exchange rate.",
-    manualRate: "Manual Rate",
-    automaticRate: "Automatic Rate",
-    useAutomaticRate: "Use Automatic Rate",
-    manualInUse: "Manual rate in use",
-    savedRate: "Saved rate — no connection right now",
-    enterAmount: "Enter a USD amount",
-    rateMissing: "This currency is not available right now"
-  },
-
-  es: {
-    chooseLanguage: "Elige tu idioma",
-    title: "Conversión de moneda",
-    usdAmount: "Importe en USD",
-    selectCurrency: "Selecciona la moneda",
-    selectPrompt: "Elige una moneda",
-    exchangeRate: "Tipo de cambio",
-    lastUpdated: "Última actualización",
-    usdTotal: "Total en USD",
-    customerPrice: "Precio para el cliente",
-    back: "Volver a Price Check",
-    loading: "Cargando…",
-    rateError: "No se pudo obtener el tipo de cambio",
-    tryAgain: "Intentar de nuevo",
-    disclaimer: "Conversión estimada. Tu banco o la entidad emisora de tu tarjeta puede aplicar un tipo de cambio diferente.",
-    manualRate: "Tipo de cambio manual",
-    automaticRate: "Tipo de cambio automático",
-    useAutomaticRate: "Usar el tipo de cambio automático",
-    manualInUse: "Se está usando el tipo de cambio manual",
-    savedRate: "Tipo de cambio guardado: ahora no hay conexión",
-    enterAmount: "Introduce un importe en USD",
-    rateMissing: "Esta moneda no está disponible ahora mismo"
-  },
-
-  zh: {
-    chooseLanguage: "请选择语言",
-    title: "货币换算",
-    usdAmount: "美元金额",
-    selectCurrency: "选择货币",
-    selectPrompt: "请选择货币",
-    exchangeRate: "汇率",
-    lastUpdated: "最后更新",
-    usdTotal: "美元总额",
-    customerPrice: "顾客价格",
-    back: "返回 Price Check",
-    loading: "加载中…",
-    rateError: "无法获取汇率",
-    tryAgain: "重试",
-    disclaimer: "换算金额仅供参考。您的银行或发卡机构可能使用不同的汇率。",
-    manualRate: "手动汇率",
-    automaticRate: "自动汇率",
-    useAutomaticRate: "使用自动汇率",
-    manualInUse: "正在使用手动汇率",
-    savedRate: "已保存的汇率 — 当前没有网络连接",
-    enterAmount: "请输入美元金额",
-    rateMissing: "此货币暂时无法使用"
-  },
-
-  ja: {
-    chooseLanguage: "言語を選んでください",
-    title: "通貨換算",
-    usdAmount: "米ドル金額",
-    selectCurrency: "通貨を選択",
-    selectPrompt: "通貨を選んでください",
-    exchangeRate: "為替レート",
-    lastUpdated: "最終更新",
-    usdTotal: "米ドル合計",
-    customerPrice: "お客様価格",
-    back: "Price Check に戻る",
-    loading: "読み込み中…",
-    rateError: "為替レートを取得できませんでした",
-    tryAgain: "もう一度試す",
-    disclaimer: "概算の換算額です。ご利用の銀行やカード会社では異なる為替レートが適用される場合があります。",
-    manualRate: "手動レート",
-    automaticRate: "自動レート",
-    useAutomaticRate: "自動レートを使う",
-    manualInUse: "手動レートを使用中",
-    savedRate: "保存されたレート（現在オフライン）",
-    enterAmount: "米ドル金額を入力してください",
-    rateMissing: "この通貨は現在ご利用いただけません"
-  },
-
-  ko: {
-    chooseLanguage: "언어를 선택하세요",
-    title: "환율 변환",
-    usdAmount: "미국 달러 금액",
-    selectCurrency: "통화 선택",
-    selectPrompt: "통화를 선택하세요",
-    exchangeRate: "환율",
-    lastUpdated: "마지막 업데이트",
-    usdTotal: "미국 달러 합계",
-    customerPrice: "고객 가격",
-    back: "Price Check로 돌아가기",
-    loading: "불러오는 중…",
-    rateError: "환율을 가져올 수 없습니다",
-    tryAgain: "다시 시도",
-    disclaimer: "예상 환산 금액입니다. 거래 은행이나 카드사에서는 다른 환율이 적용될 수 있습니다.",
-    manualRate: "수동 환율",
-    automaticRate: "자동 환율",
-    useAutomaticRate: "자동 환율 사용",
-    manualInUse: "수동 환율 사용 중",
-    savedRate: "저장된 환율 — 현재 연결되지 않았습니다",
-    enterAmount: "미국 달러 금액을 입력하세요",
-    rateMissing: "이 통화는 현재 사용할 수 없습니다"
-  },
-
-  fr: {
-    chooseLanguage: "Choisissez votre langue",
-    title: "Conversion de devises",
-    usdAmount: "Montant en USD",
-    selectCurrency: "Choisir la devise",
-    selectPrompt: "Choisissez une devise",
-    exchangeRate: "Taux de change",
-    lastUpdated: "Dernière mise à jour",
-    usdTotal: "Total en USD",
-    customerPrice: "Prix pour le client",
-    back: "Retour à Price Check",
-    loading: "Chargement…",
-    rateError: "Impossible d'obtenir le taux de change",
-    tryAgain: "Réessayer",
-    disclaimer: "Conversion estimée. Votre banque ou l'émetteur de votre carte peut appliquer un taux de change différent.",
-    manualRate: "Taux manuel",
-    automaticRate: "Taux automatique",
-    useAutomaticRate: "Utiliser le taux automatique",
-    manualInUse: "Taux manuel utilisé",
-    savedRate: "Taux enregistré — aucune connexion pour le moment",
-    enterAmount: "Saisissez un montant en USD",
-    rateMissing: "Cette devise n'est pas disponible pour le moment"
-  },
-
-  pt: {
-    chooseLanguage: "Escolha o seu idioma",
-    title: "Conversão de moeda",
-    usdAmount: "Valor em USD",
-    selectCurrency: "Selecionar moeda",
-    selectPrompt: "Escolha uma moeda",
-    exchangeRate: "Taxa de câmbio",
-    lastUpdated: "Última atualização",
-    usdTotal: "Total em USD",
-    customerPrice: "Preço para o cliente",
-    back: "Voltar ao Price Check",
-    loading: "Carregando…",
-    rateError: "Não foi possível obter a taxa de câmbio",
-    tryAgain: "Tentar novamente",
-    disclaimer: "Conversão estimada. O seu banco ou a operadora do cartão pode usar uma taxa de câmbio diferente.",
-    manualRate: "Taxa manual",
-    automaticRate: "Taxa automática",
-    useAutomaticRate: "Usar a taxa automática",
-    manualInUse: "Taxa manual em uso",
-    savedRate: "Taxa salva — sem conexão neste momento",
-    enterAmount: "Informe um valor em USD",
-    rateMissing: "Esta moeda não está disponível neste momento"
-  },
-
-  de: {
-    chooseLanguage: "Wählen Sie Ihre Sprache",
-    title: "Währungsumrechnung",
-    usdAmount: "Betrag in USD",
-    selectCurrency: "Währung auswählen",
-    selectPrompt: "Währung wählen",
-    exchangeRate: "Wechselkurs",
-    lastUpdated: "Zuletzt aktualisiert",
-    usdTotal: "Gesamtbetrag in USD",
-    customerPrice: "Kundenpreis",
-    back: "Zurück zu Price Check",
-    loading: "Wird geladen…",
-    rateError: "Wechselkurs konnte nicht abgerufen werden",
-    tryAgain: "Erneut versuchen",
-    disclaimer: "Geschätzte Umrechnung. Ihre Bank oder Ihr Kartenanbieter kann einen anderen Wechselkurs verwenden.",
-    manualRate: "Manueller Kurs",
-    automaticRate: "Automatischer Kurs",
-    useAutomaticRate: "Automatischen Kurs verwenden",
-    manualInUse: "Manueller Kurs wird verwendet",
-    savedRate: "Gespeicherter Kurs – derzeit keine Verbindung",
-    enterAmount: "Geben Sie einen Betrag in USD ein",
-    rateMissing: "Diese Währung ist derzeit nicht verfügbar"
-  }
-};
-
-/* Which locale each language uses for number and date formatting, and the
-   currency a customer speaking it most often asks for. The currency is only
-   ever used to fill an empty picker, never to change one already chosen. */
-var LANGUAGES = {
-  en: { locale: "en-US", currency: "" },
-  es: { locale: "es-MX", currency: "MXN" },
-  zh: { locale: "zh-CN", currency: "CNY" },
-  ja: { locale: "ja-JP", currency: "JPY" },
-  ko: { locale: "ko-KR", currency: "KRW" },
-  fr: { locale: "fr-FR", currency: "EUR" },
-  pt: { locale: "pt-BR", currency: "BRL" },
-  de: { locale: "de-DE", currency: "EUR" }
-};
 
 /* --------------------------------------------------------------------------
    CURRENCIES
@@ -248,7 +34,11 @@ var CURRENCIES = [
   { code: "SGD", name: "Singapore Dollar", decimals: 2 },
   { code: "HKD", name: "Hong Kong Dollar", decimals: 2 },
   { code: "TWD", name: "Taiwan Dollar", decimals: 0 },
-  { code: "INR", name: "Indian Rupee", decimals: 2, narrow: true }
+  { code: "INR", name: "Indian Rupee", decimals: 2, narrow: true },
+  { code: "THB", name: "Thai Baht", decimals: 2, narrow: true },
+  { code: "VND", name: "Vietnamese Dong", decimals: 0, narrow: true },
+  { code: "RUB", name: "Russian Ruble", decimals: 2, narrow: true },
+  { code: "AED", name: "UAE Dirham", decimals: 2 }
 ];
 
 /* --------------------------------------------------------------------------
@@ -294,7 +84,6 @@ var RATE_STORE_KEY = "priceCheckRates";
 /* --------------------------------------------------------------------------
    State
    -------------------------------------------------------------------------- */
-var language = "en";
 var autoRates = null;      /* { rates: {...}, updated: "..." } or null */
 var ratesAreSaved = false; /* true when autoRates came off the phone, not the network */
 var rateLoading = false;
@@ -307,6 +96,7 @@ var hasLoadedOnce = false;
 var viewPriceCheck = document.getElementById("viewPriceCheck");
 var viewCurrency = document.getElementById("viewCurrency");
 var openCurrencyBtn = document.getElementById("openCurrencyBtn");
+var convertNative = document.getElementById("convertNative");
 var backBtn = document.getElementById("backBtn");
 
 var langGrid = document.getElementById("langGrid");
@@ -329,20 +119,6 @@ var useAutoBtn = document.getElementById("useAutoBtn");
 /* --------------------------------------------------------------------------
    Helpers
    -------------------------------------------------------------------------- */
-
-/* Looks up a label in the chosen language, falling back to English. */
-function t(key) {
-  var pack = TRANSLATIONS[language];
-  if (pack && typeof pack[key] === "string") {
-    return pack[key];
-  }
-  return TRANSLATIONS.en[key] || "";
-}
-
-function currentLocale() {
-  return (LANGUAGES[language] || LANGUAGES.en).locale;
-}
-
 function findCurrency(code) {
   for (var i = 0; i < CURRENCIES.length; i++) {
     if (CURRENCIES[i].code === code) {
@@ -364,10 +140,32 @@ function toNumber(text) {
   return Number(cleaned);
 }
 
+/* True when the symbol a format would use is a bare "$" for something that
+   is not the US dollar. That happens in a currency's home language - Taiwan
+   writes NT$ as plain "$" - and on this screen, right under a US dollar
+   total, a bare "$" is exactly the wrong thing to show a customer. */
+function symbolIsBareDollar(locale, options, code) {
+  if (code === "USD") {
+    return false;
+  }
+  try {
+    var parts = new Intl.NumberFormat(locale, options).formatToParts(1);
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].type === "currency") {
+        return parts[i].value === "$";
+      }
+    }
+  } catch (error) {
+    /* No formatToParts: leave the format alone. */
+  }
+  return false;
+}
+
 /* Formats an amount in its own currency, in the customer's language:
    19530 JPY in Japanese -> "￥19,530", 109.32 EUR in German -> "109,32 €".
    Falls back to "CODE 123.45" on any browser that refuses the options. */
 function formatCurrency(amount, currency) {
+  var locale = currentLocale();
   var options = {
     style: "currency",
     currency: currency.code,
@@ -376,19 +174,26 @@ function formatCurrency(amount, currency) {
   };
 
   /* The short symbol keeps the big number short and recognisable: ¥906.25
-     rather than CN¥906.25. Older browsers reject the option, so they get
-     the plain form instead. */
+     rather than CN¥906.25. Only for currencies whose short symbol stands on
+     its own - every other dollar keeps its CA$ / HK$ / NT$ prefix. Older
+     browsers reject the option, so they get the plain form instead. */
   if (currency.narrow) {
     try {
       options.currencyDisplay = "narrowSymbol";
-      return new Intl.NumberFormat(currentLocale(), options).format(amount);
+      return new Intl.NumberFormat(locale, options).format(amount);
     } catch (error) {
       delete options.currencyDisplay;
     }
   }
 
+  /* If even the full symbol would come out as a bare "$", show the code
+     instead: "TWD 5,216" can never be mistaken for US dollars. */
+  if (symbolIsBareDollar(locale, options, currency.code)) {
+    options.currencyDisplay = "code";
+  }
+
   try {
-    return new Intl.NumberFormat(currentLocale(), options).format(amount);
+    return new Intl.NumberFormat(locale, options).format(amount);
   } catch (error) {
     return currency.code + " " + amount.toFixed(currency.decimals);
   }
@@ -575,16 +380,40 @@ function activeRate(code) {
    function covers a language change, a new amount, and a new rate alike.
    -------------------------------------------------------------------------- */
 
+/* The language buttons, one per entry in LANGUAGES, each in its own name. */
+function buildLanguageButtons() {
+  for (var i = 0; i < LANGUAGES.length; i++) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "lang-btn";
+    button.setAttribute("data-lang", LANGUAGES[i].code);
+    button.lang = LANGUAGES[i].code;
+    button.textContent = LANGUAGES[i].name;
+    langGrid.appendChild(button);
+  }
+}
+
+/* The way in from the calculator carries the chosen language under the
+   English, so the customer can read it. English alone when English is the
+   chosen language - there is nothing to add. */
+function updateConvertButton() {
+  if (appLanguage === "en") {
+    convertNative.textContent = "";
+    convertNative.hidden = true;
+    return;
+  }
+  convertNative.textContent = t("title");
+  convertNative.hidden = false;
+}
+
 /* Puts every translated label in place. */
 function applyLanguage() {
-  var labels = viewCurrency.querySelectorAll("[data-i18n]");
-  for (var i = 0; i < labels.length; i++) {
-    labels[i].textContent = t(labels[i].getAttribute("data-i18n"));
-  }
+  applyTranslations(viewCurrency);
+  applyDirection(viewCurrency);
 
   var buttons = langGrid.querySelectorAll(".lang-btn");
   for (var j = 0; j < buttons.length; j++) {
-    var isOn = buttons[j].getAttribute("data-lang") === language;
+    var isOn = buttons[j].getAttribute("data-lang") === appLanguage;
     buttons[j].classList.toggle("is-selected", isOn);
     buttons[j].setAttribute("aria-pressed", isOn ? "true" : "false");
   }
@@ -685,6 +514,18 @@ function render() {
   }
 }
 
+/* Fills the currency picker from the chosen language, but only while it is
+   still empty: a currency already picked is never overwritten. */
+function suggestCurrency() {
+  if (currencySelect.value) {
+    return;
+  }
+  var suggested = languageInfo(appLanguage).currency;
+  if (suggested && findCurrency(suggested)) {
+    currencySelect.value = suggested;
+  }
+}
+
 /* --------------------------------------------------------------------------
    Opening and closing the view
    Both views live in the same page, so going back leaves the Price Check
@@ -711,19 +552,13 @@ function openCurrency() {
       ratesAreSaved = true;
     }
 
-    /* Fill an empty picker from the language already chosen. */
-    if (!currencySelect.value) {
-      var suggested = (LANGUAGES[language] || {}).currency;
-      if (suggested && findCurrency(suggested)) {
-        currencySelect.value = suggested;
-      }
-    }
-
+    suggestCurrency();
     render();
     fetchRates();
     return;
   }
 
+  suggestCurrency();
   render();
 }
 
@@ -744,19 +579,14 @@ langGrid.addEventListener("click", function (event) {
   if (!button) {
     return;
   }
-
-  language = button.getAttribute("data-lang");
-
-  /* A language choice never overwrites a currency already picked - it only
-     fills the picker when it is still empty. */
-  if (!currencySelect.value) {
-    var suggested = (LANGUAGES[language] || {}).currency;
-    if (suggested && findCurrency(suggested)) {
-      currencySelect.value = suggested;
-    }
-  }
-
   /* Nothing reloads: the amount, the currency and the rate all stay put. */
+  setLanguage(button.getAttribute("data-lang"));
+});
+
+/* Whichever screen the language was chosen on, this view follows. */
+onLanguageChange(function () {
+  suggestCurrency();
+  updateConvertButton();
   render();
 });
 
@@ -776,4 +606,6 @@ retryBtn.addEventListener("click", fetchRates);
    Only the labels are drawn now. Nothing is fetched until the view is
    opened, so the calculator never waits on the network.
    -------------------------------------------------------------------------- */
+buildLanguageButtons();
 applyLanguage();
+updateConvertButton();

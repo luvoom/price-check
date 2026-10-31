@@ -13,6 +13,14 @@ only the currency converter asks for a live exchange rate.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.9.0
+- The Currency Conversion button is now large and easy to spot at the bottom of the screen
+- It also shows its own words in the language you picked, so a customer can read it and ask — and anyone who does not need it can ignore it
+- Languages went from 8 to 15: added 繁體中文, Italiano, Русский, العربية, हिन्दी, ไทย and Tiếng Việt
+- The results can now be shown in all 15 languages: pick one from the new Language menu at the top of the results
+- Both screens share the language, so choosing it once is enough
+- Added Thai baht, Vietnamese dong, Russian ruble and UAE dirham
+
 ### Version 0.8.0
 - Added a Currency Conversion screen you can turn around and show the customer
 - It opens with the Final Total already filled in, so nothing is retyped
@@ -25,9 +33,6 @@ source of truth. Update that list first, then copy it here.)*
 - Opening the app now loads the newest version straight away when you have a signal
 - With no signal it still opens instantly from the copy saved on the phone
 
-### Version 0.7.0
-- Each item's discount list now goes up to 50% off
-- Added 40%, 45% and 50% to the choices
 
 
 ---
@@ -40,8 +45,9 @@ source of truth. Update that list first, then copy it here.)*
 | --- | --- |
 | `index.html` | Both views: `#viewPriceCheck` (the calculator) and `#viewCurrency` (the converter). One is hidden while the other shows. |
 | `style.css` | All styling. Neutral palette, large touch targets, iPhone safe-area padding. |
-| `script.js` | The calculator: version history rendering, the item lines, the calculation, reset, service worker registration. Also holds `VERSION_HISTORY`, `DEFAULT_TAX_RATE`, `ITEM_DISCOUNT_CHOICES` and `STARTING_ITEM_ROWS`. |
-| `currency.js` | The converter: `TRANSLATIONS`, `LANGUAGES`, `CURRENCIES`, `RATE_SOURCES`, the fetch and the rendering. The only file that touches the network. |
+| `i18n.js` | Every translated word, plus `t`/`tf`, `setLanguage`, `onLanguageChange`, `applyTranslations` and `applyDirection`. Loads before the other two. Holds `LANGUAGES` and `TRANSLATIONS`. |
+| `script.js` | The calculator: version history rendering, the item lines, the calculation, `renderResults`, reset, service worker registration. Also holds `VERSION_HISTORY`, `DEFAULT_TAX_RATE`, `ITEM_DISCOUNT_CHOICES` and `STARTING_ITEM_ROWS`. |
+| `currency.js` | The converter: `CURRENCIES`, `RATE_SOURCES`, the fetch and the rendering. The only file that touches the network. |
 | `manifest.webmanifest` | Lets iOS open the app full-screen when added to the Home Screen. |
 | `sw.js` | Service worker. Caches the app so it opens with no connection. |
 | `apple-touch-icon.png` | 180×180 Home Screen icon for iOS. |
@@ -132,17 +138,50 @@ until a rate exists.
 A positive number typed into the manual field takes precedence over the
 automatic rate for as long as it is there; *Use Automatic Rate* clears it.
 
-Translations live in `TRANSLATIONS`, one object per language with identical
-keys, read through `t(key)` which falls back to the English wording. Labels
-carry `data-i18n="key"` in the markup and `applyLanguage()` fills them, so
-switching language rewrites the text in place — no reload, no state lost. The
-amount, currency and rate are untouched by a language change; the suggested
-currency in `LANGUAGES` only ever fills a picker that is still empty.
-
 Amounts use `Intl.NumberFormat` with the chosen language's locale and the
-`decimals` field from `CURRENCIES` (0 for JPY, KRW, TWD). Currency names come
+`decimals` field from `CURRENCIES` (0 for JPY, KRW, TWD, VND). `narrow: true`
+asks for the short symbol, which is set only where that symbol stands alone
+(¥906.25 rather than CN¥906.25); every other dollar keeps its CA$ / HK$ / NT$
+prefix. Where even the full symbol would come out as a bare `$` — Taiwan
+writes NT$ as plain `$` in its own language — `symbolIsBareDollar` catches it
+with `formatToParts` and the format falls back to the code, so `TWD 5,216` can
+never be read as US dollars next to the USD line above it. Currency names come
 from `Intl.DisplayNames` where the browser has it, inside a try/catch that
 falls back to the English name.
+
+### Languages
+
+`i18n.js` holds the whole system. `LANGUAGES` lists the fifteen — code, the
+language's own name, the locale used for formatting, the currency to suggest,
+and `rtl` for the ones written right to left. `TRANSLATIONS` has one object
+per language with identical keys; `t(key)` falls back to the English wording,
+and `tf(key, value)` fills the `{0}` in strings such as `"You saved {0} today"`.
+
+Both screens share `appLanguage`. `setLanguage()` is the only way it changes,
+and it calls every listener registered through `onLanguageChange()` —
+script.js redraws the results panel, currency.js redraws its view and the
+button label. So the Language menu above the results and the language buttons
+on the converter are two ways into the same setting.
+
+Labels carry `data-i18n="key"` in the markup and `applyTranslations(root)`
+fills them. Anything with a number in it — `Sales Tax (8.375%)`,
+`25% off` — is written in `renderResults()` and `render()` instead, from the
+same keys. `calculate()` does the arithmetic once and stores it in
+`lastResult`; `renderResults()` draws from that, so changing language redraws
+the panel without recalculating, and the amounts never move.
+
+Only the parts shown to the customer are translated: the results panel and the
+converter. The item rows, the tax field, the buttons the employee works and
+every error message stay in English, because they are for whoever is holding
+the phone.
+
+`applyDirection()` sets `dir` on those two panels for Arabic, and a short CSS
+block puts the money back to `direction: ltr` so a minus sign stays in front
+of the amount (`-$61.05`, not `$61.05-`).
+
+The button into the converter shows `Currency Conversion` with the chosen
+language's wording underneath, hidden while the language is English since
+there would be nothing to add.
 
 ### Constraints kept on purpose
 

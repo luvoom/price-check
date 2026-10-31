@@ -107,22 +107,30 @@
 
       <p class="error" id="error" hidden></p>
 
-      <!-- Results -->
+      <!-- Results. Everything inside here is translated, because this is
+           the part turned round and shown to the customer. -->
       <section class="card results" id="results" hidden>
+
+        <!-- Language for the results, shared with the Currency screen -->
+        <div class="result-lang">
+          <label class="result-lang-label" for="resultLanguage" data-i18n="language">Language</label>
+          <select id="resultLanguage" class="lang-select"></select>
+        </div>
+
         <div class="original-total">
-          <span class="original-label">Original Total</span>
+          <span class="original-label" data-i18n="originalTotal">Original Total</span>
           <span class="original-value" id="rOriginal">$0.00</span>
         </div>
 
-        <div class="section-title">Item Breakdown</div>
+        <div class="section-title" data-i18n="itemBreakdown">Item Breakdown</div>
         <ul class="breakdown" id="breakdown"></ul>
 
         <div class="result-row">
-          <span class="result-label">Items Subtotal</span>
+          <span class="result-label" data-i18n="itemsSubtotal">Items Subtotal</span>
           <span class="result-value" id="rSubtotal">$0.00</span>
         </div>
         <div class="result-row" id="rItemSavingsRow" hidden>
-          <span class="result-label">Item Discounts Saved</span>
+          <span class="result-label" data-i18n="itemDiscountsSaved">Item Discounts Saved</span>
           <span class="result-value result-value--savings" id="rItemSavings">-$0.00</span>
         </div>
         <div class="result-row" id="rDiscountRow" hidden>
@@ -130,12 +138,12 @@
           <span class="result-value result-value--savings" id="rDiscount">-$0.00</span>
         </div>
         <div class="result-row" id="rAfterRow" hidden>
-          <span class="result-label">Subtotal After All Discounts</span>
+          <span class="result-label" data-i18n="subtotalAfterAll">Subtotal After All Discounts</span>
           <span class="result-value" id="rAfter">$0.00</span>
         </div>
 
         <div class="savings-box" id="rSavingsBox" hidden>
-          <span class="savings-box-label">Total Savings</span>
+          <span class="savings-box-label" data-i18n="totalSavings">Total Savings</span>
           <span class="savings-box-value" id="rTotalSavings">$0.00</span>
           <span class="savings-box-note" id="rSavingsPercent">You saved 0%</span>
         </div>
@@ -145,26 +153,28 @@
           <span class="result-value" id="rTax">$0.00</span>
         </div>
         <div class="result-total">
-          <span class="total-label">Final Total</span>
+          <span class="total-label" data-i18n="finalTotal">Final Total</span>
           <span class="total-value" id="rTotal">$0.00</span>
         </div>
 
         <p class="saved-today" id="rSavedToday" hidden>You saved $0.00 today</p>
 
         <div class="math">
-          <div class="math-title">How this was calculated</div>
+          <div class="math-title" data-i18n="howCalculated">How this was calculated</div>
           <ol class="math-steps" id="mathSteps"></ol>
         </div>
       </section>
 
       <button type="button" class="btn-secondary" id="resetBtn">Reset</button>
 
-      <!-- Quiet way through to the customer-facing converter -->
-      <p class="link-row">
-        <button type="button" class="text-link" id="openCurrencyBtn">
-          Currency Conversion
-        </button>
-      </p>
+      <!-- The way through to the customer-facing converter. It carries the
+           chosen language underneath the English, so a customer can read it
+           and ask for it - and anyone who does not need it simply ignores
+           it. -->
+      <button type="button" class="btn-convert" id="openCurrencyBtn">
+        <span class="btn-convert-en">Currency Conversion</span>
+        <span class="btn-convert-native" id="convertNative" dir="auto" hidden></span>
+      </button>
 
     </div>
 
@@ -174,19 +184,11 @@
          ==================================================================== -->
     <div id="viewCurrency" hidden>
 
-      <!-- Language picker, in each language's own name -->
+      <!-- Language picker. The buttons are built from the list in i18n.js,
+           each showing the language's own name. -->
       <section class="card">
         <span class="field-label" data-i18n="chooseLanguage">Choose your language</span>
-        <div class="lang-grid" id="langGrid">
-          <button type="button" class="lang-btn" data-lang="en">English</button>
-          <button type="button" class="lang-btn" data-lang="es">Español</button>
-          <button type="button" class="lang-btn" data-lang="zh">中文</button>
-          <button type="button" class="lang-btn" data-lang="ja">日本語</button>
-          <button type="button" class="lang-btn" data-lang="ko">한국어</button>
-          <button type="button" class="lang-btn" data-lang="fr">Français</button>
-          <button type="button" class="lang-btn" data-lang="pt">Português</button>
-          <button type="button" class="lang-btn" data-lang="de">Deutsch</button>
-        </div>
+        <div class="lang-grid" id="langGrid"></div>
       </section>
 
       <h1 class="title" data-i18n="title">Currency Conversion</h1>
@@ -277,6 +279,8 @@
 
   </main>
 
+  <!-- i18n.js holds every translation and must load first. -->
+  <script src="i18n.js"></script>
   <script src="script.js"></script>
   <script src="currency.js"></script>
 </body>
