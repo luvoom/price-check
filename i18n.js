@@ -809,14 +809,22 @@ function isRightToLeft() {
   return languageInfo(appLanguage).rtl === true;
 }
 
-/* Changes the language and tells every part of the app to redraw itself. */
+/* Changes the language and tells every part of the app to redraw itself.
+
+   Each part is told separately, and one failing is not allowed to stop the
+   others: if the results panel cannot redraw for any reason, the Currency
+   Conversion screen must still change language. */
 function setLanguage(code) {
   if (!TRANSLATIONS[code] || code === appLanguage) {
     return;
   }
   appLanguage = code;
   for (var i = 0; i < languageListeners.length; i++) {
-    languageListeners[i]();
+    try {
+      languageListeners[i]();
+    } catch (error) {
+      /* Carry on with the rest. */
+    }
   }
 }
 
@@ -824,8 +832,16 @@ function onLanguageChange(listener) {
   languageListeners.push(listener);
 }
 
-/* Fills in every element inside `root` that carries data-i18n="key". */
+/* Fills in every element inside `root` that carries data-i18n="key".
+
+   A missing `root` is ignored rather than treated as a mistake. The page and
+   the scripts are separate files, so a phone can briefly hold a new script
+   and an older page; a part that is not there yet must simply be skipped,
+   never bring the language change down with it. */
 function applyTranslations(root) {
+  if (!root || !root.querySelectorAll) {
+    return;
+  }
   var labels = root.querySelectorAll("[data-i18n]");
   for (var i = 0; i < labels.length; i++) {
     labels[i].textContent = t(labels[i].getAttribute("data-i18n"));
@@ -835,5 +851,8 @@ function applyTranslations(root) {
 /* Right-to-left languages read the other way round, so the panels shown to
    the customer flip with them. The employee's input fields never do. */
 function applyDirection(element) {
+  if (!element) {
+    return;
+  }
   element.dir = isRightToLeft() ? "rtl" : "ltr";
 }

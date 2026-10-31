@@ -13,6 +13,12 @@ only the currency converter asks for a live exchange rate.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.9.2
+- Fixed the Language menu doing nothing on the phone after an update
+- The phone could end up running part of the new app and part of the old one, which stopped the language from changing
+- Updates now always come from the internet rather than from a copy the phone kept, so the whole app changes together
+- If anything ever does get out of step, the language menu now keeps working instead of going quiet
+
 ### Version 0.9.1
 - The Language menu now sits at the top of the screen, so it is there as soon as the app opens
 - Before, it only appeared after you pressed Calculate Total
@@ -25,14 +31,6 @@ source of truth. Update that list first, then copy it here.)*
 - The results can now be shown in all 15 languages: pick one from the new Language menu
 - Both screens share the language, so choosing it once is enough
 - Added Thai baht, Vietnamese dong, Russian ruble and UAE dirham
-
-### Version 0.8.0
-- Added a Currency Conversion screen you can turn around and show the customer
-- It opens with the Final Total already filled in, so nothing is retyped
-- Converts into 15 currencies using today's exchange rate
-- The customer can tap their own language: English, Español, 中文, 日本語, 한국어, Français, Português or Deutsch
-- You can type your own exchange rate when you need to, and switch back with one tap
-- The price calculator itself still works with no signal
 
 
 
@@ -105,6 +103,22 @@ project deliberately has no Node.js or build tooling).
 number to bump when the app changes and no second launch needed to pick up an
 edit: with a connection the newest files are fetched and re-cached on every
 load, and without one the saved copy is served immediately.
+
+The network leg goes through `fetchFresh()`, which passes
+`{ cache: "no-store" }`. Without it, "network first" is not what happens:
+GitHub Pages sends `Cache-Control: max-age=600`, so a plain `fetch()` inside
+the worker can be answered from the browser's own store without a request
+leaving the device — and each file expires on its own clock, so an update
+could leave the page from one version running the scripts of another. That is
+worse than being merely out of date: 0.9.1's `script.js` against 0.9.0's
+`index.html` threw on a missing element and took the language switching down
+with it. `fetchFresh` falls back to a plain `fetch` if a browser rejects the
+option.
+
+Nothing should depend on that never happening, so `applyTranslations` and
+`applyDirection` ignore a missing element instead of throwing, `setLanguage`
+runs each listener in its own `try`, and `script.js` guards the language
+select. A mismatched set now shows slightly older labels rather than breaking.
 
 The `fetch` handler returns early for any request whose origin is not the
 app's own, so the exchange-rate request is never intercepted, never cached and

@@ -11,6 +11,15 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.9.2",
+    changes: [
+      "Fixed the Language menu doing nothing on the phone after an update",
+      "The phone could end up running part of the new app and part of the old one, which stopped the language from changing",
+      "Updates now always come from the internet rather than from a copy the phone kept, so the whole app changes together",
+      "If anything ever does get out of step, the language menu now keeps working instead of going quiet"
+    ]
+  },
+  {
     version: "0.9.1",
     changes: [
       "The Language menu now sits at the top of the screen, so it is there as soon as the app opens",
@@ -27,17 +36,6 @@ var VERSION_HISTORY = [
       "The results can now be shown in all 15 languages: pick one from the new Language menu",
       "Both screens share the language, so choosing it once is enough",
       "Added Thai baht, Vietnamese dong, Russian ruble and UAE dirham"
-    ]
-  },
-  {
-    version: "0.8.0",
-    changes: [
-      "Added a Currency Conversion screen you can turn around and show the customer",
-      "It opens with the Final Total already filled in, so nothing is retyped",
-      "Converts into 15 currencies using today's exchange rate",
-      "The customer can tap their own language: English, Español, 中文, 日本語, 한국어, Français, Português or Deutsch",
-      "You can type your own exchange rate when you need to, and switch back with one tap",
-      "The price calculator itself still works with no signal"
     ]
   }
 ];
@@ -631,6 +629,9 @@ function renderResults() {
    opens the Currency Conversion screen in Japanese, and the other way round.
    -------------------------------------------------------------------------- */
 function buildLanguageSelect() {
+  if (!resultLanguage) {
+    return;
+  }
   for (var i = 0; i < LANGUAGES.length; i++) {
     var option = document.createElement("option");
     option.value = LANGUAGES[i].code;
@@ -640,12 +641,16 @@ function buildLanguageSelect() {
   resultLanguage.value = appLanguage;
 }
 
-resultLanguage.addEventListener("change", function () {
-  setLanguage(resultLanguage.value);
-});
+if (resultLanguage) {
+  resultLanguage.addEventListener("change", function () {
+    setLanguage(resultLanguage.value);
+  });
+}
 
 onLanguageChange(function () {
-  resultLanguage.value = appLanguage;
+  if (resultLanguage) {
+    resultLanguage.value = appLanguage;
+  }
   applyTranslations(langRow);
   applyTranslations(resultsEl);
   applyDirection(resultsEl);

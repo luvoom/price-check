@@ -60,6 +60,23 @@ self.addEventListener("fetch", function (event) {
   event.respondWith(networkFirst(event.request));
 });
 
+/* Asks the network itself, not the browser's own store of recent replies.
+
+   Without this, "ask the network first" is not what happens: the browser is
+   told by the server that these files may be reused for ten minutes, so a
+   plain fetch can hand back a copy from minutes ago without any request
+   leaving the phone. Each file expires on its own clock, so after an update
+   the app can end up running a new script against an old page - which is
+   worse than simply being out of date. */
+function fetchFresh(request) {
+  try {
+    return fetch(request, { cache: "no-store" });
+  } catch (error) {
+    /* A browser too old for the option still works, just less reliably. */
+    return fetch(request);
+  }
+}
+
 function networkFirst(request) {
   return new Promise(function (resolve) {
     var answered = false;
@@ -77,7 +94,7 @@ function networkFirst(request) {
       caches.match(request).then(answer);
     }, NETWORK_TIMEOUT_MS);
 
-    fetch(request)
+    fetchFresh(request)
       .then(function (response) {
         if (response && response.ok) {
           var copy = response.clone();
