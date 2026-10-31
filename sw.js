@@ -23,6 +23,7 @@ var FILES = [
   "index.html",
   "style.css",
   "script.js",
+  "currency.js",
   "manifest.webmanifest",
   "apple-touch-icon.png",
   "icon-192.png",
@@ -46,6 +47,15 @@ self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") {
     return;
   }
+
+  /* Only the app's own files are handled here. Anything on another site -
+     the exchange-rate request, for instance - is left completely alone: it
+     is never cached, never delayed, and its failure cannot affect whether
+     the app opens. */
+  if (new URL(event.request.url).origin !== self.location.origin) {
+    return;
+  }
+
   event.respondWith(networkFirst(event.request));
 });
 

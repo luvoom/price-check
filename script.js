@@ -11,6 +11,17 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.8.0",
+    changes: [
+      "Added a Currency Conversion screen you can turn around and show the customer",
+      "It opens with the Final Total already filled in, so nothing is retyped",
+      "Converts into 15 currencies using today's exchange rate",
+      "The customer can tap their own language: English, Español, 中文, 日本語, 한국어, Français, Português or Deutsch",
+      "You can type your own exchange rate when you need to, and switch back with one tap",
+      "The price calculator itself still works with no signal"
+    ]
+  },
+  {
     version: "0.7.1",
     changes: [
       "Opening the app now loads the newest version straight away when you have a signal",
@@ -23,13 +34,6 @@ var VERSION_HISTORY = [
       "Each item's discount list now goes up to 50% off",
       "Added 40%, 45% and 50% to the choices"
     ]
-  },
-  {
-    version: "0.6.1",
-    changes: [
-      "Added a Home Screen app icon: a white P on a dark navy square",
-      "The same icon shows in the browser tab"
-    ]
   }
 ];
 
@@ -41,6 +45,11 @@ var ITEM_DISCOUNT_CHOICES = [0, 10, 15, 20, 25, 30, 35, 40, 45, 50];
 
 /* How many blank item lines the app opens with. */
 var STARTING_ITEM_ROWS = 3;
+
+/* The last Final Total worked out, left here for the Currency Conversion
+   screen to pick up. Nothing else reads it, and the calculator never waits
+   on anything outside this file. */
+window.PriceCheck = { finalTotal: null };
 
 /* --------------------------------------------------------------------------
    Element references
@@ -564,6 +573,9 @@ function calculate() {
   );
 
   resultsEl.hidden = false;
+
+  /* Hand the total to the Currency Conversion screen. */
+  window.PriceCheck.finalTotal = finalTotal;
 }
 
 /* --------------------------------------------------------------------------
@@ -576,6 +588,7 @@ function reset() {
   taxInput.value = formatPercent(DEFAULT_TAX_RATE);
   clearError();
   resultsEl.hidden = true;
+  window.PriceCheck.finalTotal = null;
 }
 
 /* --------------------------------------------------------------------------

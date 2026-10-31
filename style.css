@@ -623,12 +623,255 @@ body {
   text-align: center;
 }
 
+/* --- Link through to Currency Conversion --------------------------------- */
+
+.link-row {
+  margin: 20px 0 0;
+  text-align: center;
+}
+
+.text-link {
+  border: 0;
+  background: none;
+  padding: 10px 6px;
+  color: var(--gray-text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* --- Currency Conversion: language picker -------------------------------- */
+
+/* Four across, two rows:  English | Español | 中文 | 日本語
+                          한국어  | Français | Português | Deutsch  */
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.lang-btn {
+  min-height: 48px;
+  padding: 0 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--charcoal);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.lang-btn.is-selected {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+}
+
+/* --- Currency Conversion: inputs ----------------------------------------- */
+
+.money-sign {
+  margin-right: 4px;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--gray-text);
+}
+
+.currency-select {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 40px 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background-color: #ffffff;
+  /* The dropdown arrow is drawn here rather than loaded, so the app stays
+     self-contained and works with no connection. */
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  color: var(--navy);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.currency-select:focus {
+  outline: 2px solid var(--navy);
+  outline-offset: -2px;
+}
+
+/* --- Currency Conversion: the part the customer reads -------------------- */
+
+.customer-card {
+  border: 2px solid var(--navy);
+  padding: 18px 16px 16px;
+}
+
+.cc-usd {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cc-usd-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cc-usd-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--charcoal);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cc-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding-top: 16px;
+}
+
+.cc-main-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cc-main-value {
+  font-size: 54px;
+  line-height: 1.08;
+  font-weight: 700;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+/* Longer amounts such as ₩1,834,200 step down so they never run off-screen. */
+.cc-main-value.is-long { font-size: 42px; }
+.cc-main-value.is-xlong { font-size: 32px; }
+
+.cc-disclaimer {
+  margin: 14px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--gray-text);
+}
+
+/* --- Currency Conversion: rate status ------------------------------------ */
+
+.rate-status {
+  margin: 8px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-text);
+}
+
+.rate-status.is-error {
+  color: #9b2c2c;
+}
+
+/* --- Currency Conversion: manual rate (secondary) ------------------------ */
+
+.manual-rate {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.manual-rate > summary {
+  padding: 6px 0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  list-style: none;
+}
+
+.manual-rate > summary::-webkit-details-marker {
+  display: none;
+}
+
+.manual-auto {
+  margin: 8px 0 10px;
+  font-size: 14px;
+  color: var(--gray-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.manual-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.manual-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--navy);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.manual-input:focus {
+  outline: 2px solid var(--navy);
+  outline-offset: -2px;
+}
+
+.manual-code {
+  flex: 0 0 auto;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-text);
+}
+
 /* --- Small phones -------------------------------------------------------- */
 
 @media (max-width: 359px) {
   .total-value { font-size: 44px; }
-  
-  
+
+  /* Three across on the narrowest phones, so no language name is clipped. */
+  .lang-grid { grid-template-columns: repeat(3, 1fr); }
+
+  .cc-main-value { font-size: 42px; }
+  .cc-main-value.is-long { font-size: 34px; }
+  .cc-main-value.is-xlong { font-size: 27px; }
+
   .item-head,
   .item-row { grid-template-columns: 1.2fr 0.55fr 1.1fr 30px; }
 }

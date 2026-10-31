@@ -22,140 +22,262 @@
 <body>
   <main class="app">
 
-    <!-- Version History -->
-    <details class="version-history" id="versionHistory">
-      <summary>
-        <span class="vh-label">Version History</span>
-        <span class="vh-current" id="versionCurrent">—</span>
-      </summary>
-      <div class="vh-body" id="versionBody"></div>
-    </details>
+    <!-- ====================================================================
+         VIEW 1 - Price Check (the main calculator)
+         ==================================================================== -->
+    <div id="viewPriceCheck">
 
-    <h1 class="title">Price Check</h1>
+      <!-- Version History -->
+      <details class="version-history" id="versionHistory">
+        <summary>
+          <span class="vh-label">Version History</span>
+          <span class="vh-current" id="versionCurrent">—</span>
+        </summary>
+        <div class="vh-body" id="versionBody"></div>
+      </details>
 
-    <!-- Items -->
-    <section class="card">
-      <span class="field-label">Items</span>
-      <p class="section-note">
-        One line per item. Each item keeps its own discount.
+      <h1 class="title">Price Check</h1>
+
+      <!-- Items -->
+      <section class="card">
+        <span class="field-label">Items</span>
+        <p class="section-note">
+          One line per item. Each item keeps its own discount.
+        </p>
+
+        <div class="item-head">
+          <span>Price</span>
+          <span>Qty</span>
+          <span>Discount</span>
+          <span></span>
+        </div>
+        <div id="itemRows"></div>
+
+        <button type="button" class="btn-secondary btn-secondary--light" id="addItemBtn">
+          + Add Item
+        </button>
+      </section>
+
+      <!-- Additional discount, taken off the combined subtotal -->
+      <section class="card card--second">
+        <span class="field-label">
+          Additional Discount
+          <span class="field-hint">Optional</span>
+        </span>
+        <p class="section-note">
+          Taken off the combined subtotal, after every item discount.
+        </p>
+
+        <div class="chip-row" id="additionalChips">
+          <button type="button" class="chip" data-percent="0">None</button>
+          <button type="button" class="chip" data-percent="10">10%</button>
+          <button type="button" class="chip" data-percent="15">15%</button>
+          <button type="button" class="chip" data-percent="20">20%</button>
+          <button type="button" class="chip" data-percent="25">25%</button>
+        </div>
+        <div class="percent-input-wrap">
+          <input
+            id="additionalDiscount"
+            class="percent-input"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            placeholder="0">
+          <span class="percent">%</span>
+        </div>
+      </section>
+
+      <!-- Sales Tax -->
+      <section class="card">
+        <label class="field-label" for="tax">Sales Tax</label>
+        <div class="percent-input-wrap">
+          <input
+            id="tax"
+            class="percent-input"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            placeholder="0">
+          <span class="percent">%</span>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <button type="button" class="btn-primary" id="calcBtn">Calculate Total</button>
+
+      <p class="error" id="error" hidden></p>
+
+      <!-- Results -->
+      <section class="card results" id="results" hidden>
+        <div class="original-total">
+          <span class="original-label">Original Total</span>
+          <span class="original-value" id="rOriginal">$0.00</span>
+        </div>
+
+        <div class="section-title">Item Breakdown</div>
+        <ul class="breakdown" id="breakdown"></ul>
+
+        <div class="result-row">
+          <span class="result-label">Items Subtotal</span>
+          <span class="result-value" id="rSubtotal">$0.00</span>
+        </div>
+        <div class="result-row" id="rItemSavingsRow" hidden>
+          <span class="result-label">Item Discounts Saved</span>
+          <span class="result-value result-value--savings" id="rItemSavings">-$0.00</span>
+        </div>
+        <div class="result-row" id="rDiscountRow" hidden>
+          <span class="result-label" id="rDiscountLabel">Additional Discount</span>
+          <span class="result-value result-value--savings" id="rDiscount">-$0.00</span>
+        </div>
+        <div class="result-row" id="rAfterRow" hidden>
+          <span class="result-label">Subtotal After All Discounts</span>
+          <span class="result-value" id="rAfter">$0.00</span>
+        </div>
+
+        <div class="savings-box" id="rSavingsBox" hidden>
+          <span class="savings-box-label">Total Savings</span>
+          <span class="savings-box-value" id="rTotalSavings">$0.00</span>
+          <span class="savings-box-note" id="rSavingsPercent">You saved 0%</span>
+        </div>
+
+        <div class="result-row">
+          <span class="result-label" id="rTaxLabel">Sales Tax</span>
+          <span class="result-value" id="rTax">$0.00</span>
+        </div>
+        <div class="result-total">
+          <span class="total-label">Final Total</span>
+          <span class="total-value" id="rTotal">$0.00</span>
+        </div>
+
+        <p class="saved-today" id="rSavedToday" hidden>You saved $0.00 today</p>
+
+        <div class="math">
+          <div class="math-title">How this was calculated</div>
+          <ol class="math-steps" id="mathSteps"></ol>
+        </div>
+      </section>
+
+      <button type="button" class="btn-secondary" id="resetBtn">Reset</button>
+
+      <!-- Quiet way through to the customer-facing converter -->
+      <p class="link-row">
+        <button type="button" class="text-link" id="openCurrencyBtn">
+          Currency Conversion
+        </button>
       </p>
 
-      <div class="item-head">
-        <span>Price</span>
-        <span>Qty</span>
-        <span>Discount</span>
-        <span></span>
-      </div>
-      <div id="itemRows"></div>
+    </div>
 
-      <button type="button" class="btn-secondary btn-secondary--light" id="addItemBtn">
-        + Add Item
+    <!-- ====================================================================
+         VIEW 2 - Currency Conversion (shown to the customer)
+         Every label carrying data-i18n is translated by currency.js.
+         ==================================================================== -->
+    <div id="viewCurrency" hidden>
+
+      <!-- Language picker, in each language's own name -->
+      <section class="card">
+        <span class="field-label" data-i18n="chooseLanguage">Choose your language</span>
+        <div class="lang-grid" id="langGrid">
+          <button type="button" class="lang-btn" data-lang="en">English</button>
+          <button type="button" class="lang-btn" data-lang="es">Español</button>
+          <button type="button" class="lang-btn" data-lang="zh">中文</button>
+          <button type="button" class="lang-btn" data-lang="ja">日本語</button>
+          <button type="button" class="lang-btn" data-lang="ko">한국어</button>
+          <button type="button" class="lang-btn" data-lang="fr">Français</button>
+          <button type="button" class="lang-btn" data-lang="pt">Português</button>
+          <button type="button" class="lang-btn" data-lang="de">Deutsch</button>
+        </div>
+      </section>
+
+      <h1 class="title" data-i18n="title">Currency Conversion</h1>
+
+      <!-- USD amount, carried over from Price Check but still editable -->
+      <section class="card">
+        <label class="field-label" for="usdAmount" data-i18n="usdAmount">USD Amount</label>
+        <div class="percent-input-wrap">
+          <span class="money-sign">$</span>
+          <input
+            id="usdAmount"
+            class="percent-input"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            placeholder="0.00">
+        </div>
+      </section>
+
+      <!-- Currency -->
+      <section class="card">
+        <label class="field-label" for="currencySelect" data-i18n="selectCurrency">Select Currency</label>
+        <select id="currencySelect" class="currency-select"></select>
+      </section>
+
+      <!-- The part held up for the customer to read -->
+      <section class="card customer-card">
+        <div class="cc-usd">
+          <span class="cc-usd-label" data-i18n="usdTotal">USD Total</span>
+          <span class="cc-usd-value" id="ccUsd">$0.00</span>
+        </div>
+
+        <div class="cc-main">
+          <span class="cc-main-label" data-i18n="customerPrice">Customer Price</span>
+          <span class="cc-main-value" id="ccPrice">—</span>
+        </div>
+
+        <p class="cc-disclaimer" data-i18n="disclaimer">
+          Estimated conversion. Your bank or card issuer may use a different exchange rate.
+        </p>
+      </section>
+
+      <!-- Rate, and where it came from -->
+      <section class="card">
+        <div class="result-row">
+          <span class="result-label" data-i18n="exchangeRate">Exchange Rate</span>
+          <span class="result-value" id="rateValue">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label" data-i18n="lastUpdated">Last Updated</span>
+          <span class="result-value" id="rateUpdated">—</span>
+        </div>
+
+        <p class="rate-status" id="rateStatus" hidden></p>
+
+        <button type="button" class="btn-secondary" id="retryBtn" hidden data-i18n="tryAgain">
+          Try Again
+        </button>
+
+        <!-- Optional override, deliberately tucked away -->
+        <details class="manual-rate">
+          <summary data-i18n="manualRate">Manual Rate</summary>
+          <div class="manual-body">
+            <p class="manual-auto" id="autoRateNote">—</p>
+            <div class="manual-field">
+              <input
+                id="manualRateInput"
+                class="manual-input"
+                type="text"
+                inputmode="decimal"
+                autocomplete="off"
+                placeholder="0.00"
+                aria-label="Manual exchange rate">
+              <span class="manual-code" id="manualRateCode"></span>
+            </div>
+            <button type="button" class="btn-secondary btn-secondary--light" id="useAutoBtn" data-i18n="useAutomaticRate">
+              Use Automatic Rate
+            </button>
+          </div>
+        </details>
+      </section>
+
+      <button type="button" class="btn-secondary" id="backBtn" data-i18n="back">
+        Back to Price Check
       </button>
-    </section>
 
-    <!-- Additional discount, taken off the combined subtotal -->
-    <section class="card card--second">
-      <span class="field-label">
-        Additional Discount
-        <span class="field-hint">Optional</span>
-      </span>
-      <p class="section-note">
-        Taken off the combined subtotal, after every item discount.
-      </p>
-
-      <div class="chip-row" id="additionalChips">
-        <button type="button" class="chip" data-percent="0">None</button>
-        <button type="button" class="chip" data-percent="10">10%</button>
-        <button type="button" class="chip" data-percent="15">15%</button>
-        <button type="button" class="chip" data-percent="20">20%</button>
-        <button type="button" class="chip" data-percent="25">25%</button>
-      </div>
-      <div class="percent-input-wrap">
-        <input
-          id="additionalDiscount"
-          class="percent-input"
-          type="text"
-          inputmode="decimal"
-          autocomplete="off"
-          placeholder="0">
-        <span class="percent">%</span>
-      </div>
-    </section>
-
-    <!-- Sales Tax -->
-    <section class="card">
-      <label class="field-label" for="tax">Sales Tax</label>
-      <div class="percent-input-wrap">
-        <input
-          id="tax"
-          class="percent-input"
-          type="text"
-          inputmode="decimal"
-          autocomplete="off"
-          placeholder="0">
-        <span class="percent">%</span>
-      </div>
-    </section>
-
-    <!-- Actions -->
-    <button type="button" class="btn-primary" id="calcBtn">Calculate Total</button>
-
-    <p class="error" id="error" hidden></p>
-
-    <!-- Results -->
-    <section class="card results" id="results" hidden>
-      <div class="original-total">
-        <span class="original-label">Original Total</span>
-        <span class="original-value" id="rOriginal">$0.00</span>
-      </div>
-
-      <div class="section-title">Item Breakdown</div>
-      <ul class="breakdown" id="breakdown"></ul>
-
-      <div class="result-row">
-        <span class="result-label">Items Subtotal</span>
-        <span class="result-value" id="rSubtotal">$0.00</span>
-      </div>
-      <div class="result-row" id="rItemSavingsRow" hidden>
-        <span class="result-label">Item Discounts Saved</span>
-        <span class="result-value result-value--savings" id="rItemSavings">-$0.00</span>
-      </div>
-      <div class="result-row" id="rDiscountRow" hidden>
-        <span class="result-label" id="rDiscountLabel">Additional Discount</span>
-        <span class="result-value result-value--savings" id="rDiscount">-$0.00</span>
-      </div>
-      <div class="result-row" id="rAfterRow" hidden>
-        <span class="result-label">Subtotal After All Discounts</span>
-        <span class="result-value" id="rAfter">$0.00</span>
-      </div>
-
-      <div class="savings-box" id="rSavingsBox" hidden>
-        <span class="savings-box-label">Total Savings</span>
-        <span class="savings-box-value" id="rTotalSavings">$0.00</span>
-        <span class="savings-box-note" id="rSavingsPercent">You saved 0%</span>
-      </div>
-
-      <div class="result-row">
-        <span class="result-label" id="rTaxLabel">Sales Tax</span>
-        <span class="result-value" id="rTax">$0.00</span>
-      </div>
-      <div class="result-total">
-        <span class="total-label">Final Total</span>
-        <span class="total-value" id="rTotal">$0.00</span>
-      </div>
-
-      <p class="saved-today" id="rSavedToday" hidden>You saved $0.00 today</p>
-
-      <div class="math">
-        <div class="math-title">How this was calculated</div>
-        <ol class="math-steps" id="mathSteps"></ol>
-      </div>
-    </section>
-
-    <button type="button" class="btn-secondary" id="resetBtn">Reset</button>
+    </div>
 
   </main>
 
   <script src="script.js"></script>
+  <script src="currency.js"></script>
 </body>
 </html>
