@@ -11,6 +11,10 @@ packages, no server, no accounts, no internet connection required.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.7.0
+- Each item's discount list now goes up to 50% off
+- Added 40%, 45% and 50% to the choices
+
 ### Version 0.6.1
 - Added a Home Screen app icon: a white P on a dark navy square
 - The same icon shows in the browser tab
@@ -20,13 +24,6 @@ source of truth. Update that list first, then copy it here.)*
 - Removed the separate single-item calculator; one item is simply one line
 - Additional Discount and Sales Tax work exactly as before
 - Results still show every item, the savings, and the final total
-
-### Version 0.5.0
-- Multiple-item results now open with the Original Total before any discounts
-- Each item shows what was saved on it and what it comes to after its discount
-- Added a Total Savings panel with the dollar amount and the overall percentage saved
-- Added a "You saved $X today" line under the Final Total to show a customer
-- Savings are shown in green so they read as money off, not as a charge
 
 
 ---

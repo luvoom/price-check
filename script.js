@@ -11,6 +11,13 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.7.0",
+    changes: [
+      "Each item's discount list now goes up to 50% off",
+      "Added 40%, 45% and 50% to the choices"
+    ]
+  },
+  {
     version: "0.6.1",
     changes: [
       "Added a Home Screen app icon: a white P on a dark navy square",
@@ -25,16 +32,6 @@ var VERSION_HISTORY = [
       "Additional Discount and Sales Tax work exactly as before",
       "Results still show every item, the savings, and the final total"
     ]
-  },
-  {
-    version: "0.5.0",
-    changes: [
-      "Results now open with the Original Total before any discounts",
-      "Each item shows what was saved on it and what it comes to after its discount",
-      "Added a Total Savings panel with the dollar amount and the overall percentage saved",
-      "Added a \"You saved $X today\" line under the Final Total to show a customer",
-      "Savings are shown in green so they read as money off, not as a charge"
-    ]
   }
 ];
 
@@ -42,7 +39,7 @@ var VERSION_HISTORY = [
 var DEFAULT_TAX_RATE = 8.375;
 
 /* The discounts offered in each item's dropdown. */
-var ITEM_DISCOUNT_CHOICES = [0, 10, 15, 20, 25, 30, 35];
+var ITEM_DISCOUNT_CHOICES = [0, 10, 15, 20, 25, 30, 35, 40, 45, 50];
 
 /* How many blank item lines the app opens with. */
 var STARTING_ITEM_ROWS = 3;
