@@ -11,6 +11,10 @@ packages, no server, no accounts, no internet connection required.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.7.1
+- Opening the app now loads the newest version straight away when you have a signal
+- With no signal it still opens instantly from the copy saved on the phone
+
 ### Version 0.7.0
 - Each item's discount list now goes up to 50% off
 - Added 40%, 45% and 50% to the choices
@@ -18,12 +22,6 @@ source of truth. Update that list first, then copy it here.)*
 ### Version 0.6.1
 - Added a Home Screen app icon: a white P on a dark navy square
 - The same icon shows in the browser tab
-
-### Version 0.6.0
-- The item list is now the main screen - nothing to open first
-- Removed the separate single-item calculator; one item is simply one line
-- Additional Discount and Sales Tax work exactly as before
-- Results still show every item, the savings, and the final total
 
 
 ---
@@ -88,9 +86,11 @@ project deliberately has no Node.js or build tooling).
 
 ### Caching
 
-`sw.js` uses one fixed cache name and a cache-first / refresh-in-background
-strategy, so there is no cache version number to bump when the app changes. An
-edited file is picked up the second time the app is opened after the change.
+`sw.js` uses one fixed cache name and a network-first strategy with a
+`NETWORK_TIMEOUT_MS` (3s) fallback to the cache, so there is no cache version
+number to bump when the app changes and no second launch needed to pick up an
+edit: with a connection the newest files are fetched and re-cached on every
+load, and without one the saved copy is served immediately.
 
 ### Constraints kept on purpose
 

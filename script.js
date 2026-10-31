@@ -11,6 +11,13 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.7.1",
+    changes: [
+      "Opening the app now loads the newest version straight away when you have a signal",
+      "With no signal it still opens instantly from the copy saved on the phone"
+    ]
+  },
+  {
     version: "0.7.0",
     changes: [
       "Each item's discount list now goes up to 50% off",
@@ -22,15 +29,6 @@ var VERSION_HISTORY = [
     changes: [
       "Added a Home Screen app icon: a white P on a dark navy square",
       "The same icon shows in the browser tab"
-    ]
-  },
-  {
-    version: "0.6.0",
-    changes: [
-      "The item list is now the main screen - nothing to open first",
-      "Removed the separate single-item calculator; one item is simply one line",
-      "Additional Discount and Sales Tax work exactly as before",
-      "Results still show every item, the savings, and the final total"
     ]
   }
 ];
