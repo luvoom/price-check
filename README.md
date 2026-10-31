@@ -13,6 +13,11 @@ only the currency converter asks for a live exchange rate.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.9.3
+- The currency now follows the language you pick, so choosing 日本語 no longer leaves the price in Mexican pesos
+- If you pick a currency from the list yourself, it is kept and the language never changes it
+- The Currency Conversion button always reads in the language currently chosen
+
 ### Version 0.9.2
 - Fixed the Language menu doing nothing on the phone after an update
 - The phone could end up running part of the new app and part of the old one, which stopped the language from changing
@@ -23,14 +28,6 @@ source of truth. Update that list first, then copy it here.)*
 - The Language menu now sits at the top of the screen, so it is there as soon as the app opens
 - Before, it only appeared after you pressed Calculate Total
 - Picking a language there also changes the Currency Conversion button straight away
-
-### Version 0.9.0
-- The Currency Conversion button is now large and easy to spot at the bottom of the screen
-- It also shows its own words in the language you picked, so a customer can read it and ask — and anyone who does not need it can ignore it
-- Languages went from 8 to 15: added 繁體中文, Italiano, Русский, العربية, हिन्दी, ไทย and Tiếng Việt
-- The results can now be shown in all 15 languages: pick one from the new Language menu
-- Both screens share the language, so choosing it once is enough
-- Added Thai baht, Vietnamese dong, Russian ruble and UAE dirham
 
 
 
@@ -182,6 +179,14 @@ the converter are two ways into the same setting.
 because `#results` carries `hidden` until a calculation has been made: in the
 results card the menu could not be found, or used, until Calculate Total had
 been pressed.
+
+A language change leaves the amount and the rate alone. The currency depends
+on where it came from: `currencyChosenByHand` is set when the picker is used,
+and `suggestCurrency()` then steps aside, so a deliberate choice is never
+undone. Until then the currency is only the `currency` field of the chosen
+language, and it follows the next one — Español suggests MXN, so switching to
+日本語 has to leave yen rather than a Japanese screen quoting Mexican pesos.
+Selecting the blank entry clears the flag.
 
 Labels carry `data-i18n="key"` in the markup and `applyTranslations(root)`
 fills them. Anything with a number in it — `Sales Tax (8.375%)`,

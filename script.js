@@ -11,6 +11,14 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.9.3",
+    changes: [
+      "The currency now follows the language you pick, so choosing 日本語 no longer leaves the price in Mexican pesos",
+      "If you pick a currency from the list yourself, it is kept and the language never changes it",
+      "The Currency Conversion button always reads in the language currently chosen"
+    ]
+  },
+  {
     version: "0.9.2",
     changes: [
       "Fixed the Language menu doing nothing on the phone after an update",
@@ -25,17 +33,6 @@ var VERSION_HISTORY = [
       "The Language menu now sits at the top of the screen, so it is there as soon as the app opens",
       "Before, it only appeared after you pressed Calculate Total",
       "Picking a language there also changes the Currency Conversion button straight away"
-    ]
-  },
-  {
-    version: "0.9.0",
-    changes: [
-      "The Currency Conversion button is now large and easy to spot at the bottom of the screen",
-      "It also shows its own words in the language you picked, so a customer can read it and ask — and anyone who does not need it can ignore it",
-      "Languages went from 8 to 15: added 繁體中文, Italiano, Русский, العربية, हिन्दी, ไทย and Tiếng Việt",
-      "The results can now be shown in all 15 languages: pick one from the new Language menu",
-      "Both screens share the language, so choosing it once is enough",
-      "Added Thai baht, Vietnamese dong, Russian ruble and UAE dirham"
     ]
   }
 ];

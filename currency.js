@@ -84,6 +84,11 @@ var RATE_STORE_KEY = "priceCheckRates";
 /* --------------------------------------------------------------------------
    State
    -------------------------------------------------------------------------- */
+/* True once the currency has been picked from the list by hand. Until then
+   the currency is only ever a suggestion made from the chosen language, and
+   a new language is free to replace it. */
+var currencyChosenByHand = false;
+
 var autoRates = null;      /* { rates: {...}, updated: "..." } or null */
 var ratesAreSaved = false; /* true when autoRates came off the phone, not the network */
 var rateLoading = false;
@@ -514,10 +519,15 @@ function render() {
   }
 }
 
-/* Fills the currency picker from the chosen language, but only while it is
-   still empty: a currency already picked is never overwritten. */
+/* Points the currency picker at the one a speaker of the chosen language
+   usually asks for.
+
+   A currency picked from the list by hand is never overwritten - that is a
+   decision, and switching language must not undo it. A currency that is only
+   there because an earlier language suggested it is not a decision, and it
+   does follow: going from Español to 日本語 has to leave yen, not pesos. */
 function suggestCurrency() {
-  if (currencySelect.value) {
+  if (currencyChosenByHand) {
     return;
   }
   var suggested = languageInfo(appLanguage).currency;
@@ -565,6 +575,8 @@ function openCurrency() {
 function closeCurrency() {
   viewCurrency.hidden = true;
   viewPriceCheck.hidden = false;
+  /* The way back in should always read in the language just used. */
+  updateConvertButton();
   window.scrollTo(0, 0);
 }
 
@@ -590,7 +602,12 @@ onLanguageChange(function () {
   render();
 });
 
-currencySelect.addEventListener("change", render);
+currencySelect.addEventListener("change", function () {
+  /* Picking from the list is a decision; going back to the blank entry is
+     not, so the suggestion takes over again. */
+  currencyChosenByHand = currencySelect.value !== "";
+  render();
+});
 usdAmountInput.addEventListener("input", render);
 manualRateInput.addEventListener("input", render);
 
