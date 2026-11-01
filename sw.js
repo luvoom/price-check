@@ -31,10 +31,29 @@ var FILES = [
   "icon-512.png"
 ];
 
+/* Saving a copy of the app to open with no connection.
+
+   Each file is asked for through fetchFresh, so what gets saved is what the
+   server has now and not whatever the browser happened to be holding. One
+   file failing does not stop the worker installing: a worker that refuses to
+   install leaves the previous one in charge for good, which is the one thing
+   that must not happen to an app that updates by being opened. */
 self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(FILES);
+      var saves = FILES.map(function (file) {
+        var request = new Request(file);
+        return fetchFresh(request)
+          .then(function (response) {
+            if (response && response.ok) {
+              return cache.put(request, response);
+            }
+          })
+          .catch(function () {
+            /* Keep whatever copy of this one is already saved. */
+          });
+      });
+      return Promise.all(saves);
     })
   );
   self.skipWaiting();
@@ -67,14 +86,25 @@ self.addEventListener("fetch", function (event) {
    plain fetch can hand back a copy from minutes ago without any request
    leaving the phone. Each file expires on its own clock, so after an update
    the app can end up running a new script against an old page - which is
-   worse than simply being out of date. */
+   worse than simply being out of date.
+
+   This is done by asking for a slightly different address each time rather
+   than with fetch's `cache` option. The option is the obvious way and it is
+   what this used to do, but a rejected promise from it is indistinguishable
+   here from having no signal, so the worker would answer from the saved copy
+   and the app would never update again - with no error anywhere to show for
+   it. An address no cache has seen before cannot be answered from a cache,
+   needs no support from the browser, and cannot fail quietly. The reply is
+   still saved under the real address, so nothing downstream changes. */
 function fetchFresh(request) {
-  try {
-    return fetch(request, { cache: "no-store" });
-  } catch (error) {
-    /* A browser too old for the option still works, just less reliably. */
+  var separator = request.url.indexOf("?") === -1 ? "?" : "&";
+  var freshUrl = request.url + separator + "fresh=" + Date.now();
+
+  return fetch(freshUrl).catch(function () {
+    /* Should anything object to the altered address, try the plain one
+       before falling back to the saved copy. */
     return fetch(request);
-  }
+  });
 }
 
 function networkFirst(request) {

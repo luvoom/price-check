@@ -11,6 +11,14 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.10.1",
+    changes: [
+      "Fixed updates not reaching the phone at all: the app could keep opening an old copy no matter how many times it was closed and reopened",
+      "The app now asks for its files in a way no stored copy can answer, so opening it really does bring the newest version",
+      "If one file cannot be downloaded, the update no longer stops — the rest still comes through"
+    ]
+  },
+  {
     version: "0.10.0",
     changes: [
       "Changing a price, quantity, discount or the tax now marks the results as out of date, so an old total is never shown as if it were current",
@@ -26,15 +34,6 @@ var VERSION_HISTORY = [
       "The currency now follows the language you pick, so choosing 日本語 no longer leaves the price in Mexican pesos",
       "If you pick a currency from the list yourself, it is kept and the language never changes it",
       "The Currency Conversion button always reads in the language currently chosen"
-    ]
-  },
-  {
-    version: "0.9.2",
-    changes: [
-      "Fixed the Language menu doing nothing on the phone after an update",
-      "The phone could end up running part of the new app and part of the old one, which stopped the language from changing",
-      "Updates now always come from the internet rather than from a copy the phone kept, so the whole app changes together",
-      "If anything ever does get out of step, the language menu now keeps working instead of going quiet"
     ]
   }
 ];

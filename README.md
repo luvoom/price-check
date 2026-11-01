@@ -13,6 +13,11 @@ only the currency converter asks for a live exchange rate.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.10.1
+- Fixed updates not reaching the phone at all: the app could keep opening an old copy no matter how many times it was closed and reopened
+- The app now asks for its files in a way no stored copy can answer, so opening it really does bring the newest version
+- If one file cannot be downloaded, the update no longer stops — the rest still comes through
+
 ### Version 0.10.0
 - Changing a price, quantity, discount or the tax now marks the results as out of date, so an old total is never shown as if it were current
 - While they are out of date the Currency Conversion screen no longer fills in that old total
@@ -24,14 +29,6 @@ source of truth. Update that list first, then copy it here.)*
 - The currency now follows the language you pick, so choosing 日本語 no longer leaves the price in Mexican pesos
 - If you pick a currency from the list yourself, it is kept and the language never changes it
 - The Currency Conversion button always reads in the language currently chosen
-
-### Version 0.9.2
-- Fixed the Language menu doing nothing on the phone after an update
-- The phone could end up running part of the new app and part of the old one, which stopped the language from changing
-- Updates now always come from the internet rather than from a copy the phone kept, so the whole app changes together
-- If anything ever does get out of step, the language menu now keeps working instead of going quiet
-
-
 
 ---
 
@@ -103,16 +100,30 @@ number to bump when the app changes and no second launch needed to pick up an
 edit: with a connection the newest files are fetched and re-cached on every
 load, and without one the saved copy is served immediately.
 
-The network leg goes through `fetchFresh()`, which passes
-`{ cache: "no-store" }`. Without it, "network first" is not what happens:
-GitHub Pages sends `Cache-Control: max-age=600`, so a plain `fetch()` inside
-the worker can be answered from the browser's own store without a request
-leaving the device — and each file expires on its own clock, so an update
-could leave the page from one version running the scripts of another. That is
-worse than being merely out of date: 0.9.1's `script.js` against 0.9.0's
-`index.html` threw on a missing element and took the language switching down
-with it. `fetchFresh` falls back to a plain `fetch` if a browser rejects the
-option.
+The network leg goes through `fetchFresh()`. Without something of the sort,
+"network first" is not what happens: GitHub Pages sends
+`Cache-Control: max-age=600`, so a plain `fetch()` inside the worker can be
+answered from the browser's own store without a request leaving the device —
+and each file expires on its own clock, so an update could leave the page
+from one version running the scripts of another. That is worse than being
+merely out of date: 0.9.1's `script.js` against 0.9.0's `index.html` threw on
+a missing element and took the language switching down with it.
+
+`fetchFresh` does it by asking for `?fresh=<timestamp>`, not with fetch's
+`cache` option. The option is the obvious way and 0.9.2–0.10.0 used it, but a
+rejected promise from it is indistinguishable at the call site from having no
+signal: `networkFirst` would answer from the saved copy, and the app would
+never update again with nothing anywhere to show for it. That is what
+happened on the phone. An address no cache has seen cannot be answered from a
+cache, needs no support from the browser, and cannot fail quietly; the reply
+is still stored under the real address, so the cache keys stay clean. A
+plain `fetch(request)` is tried if the altered address is refused.
+
+Install uses `fetchFresh` per file rather than `cache.addAll`, so the saved
+copy is what the server has now, and one file failing leaves the rest saved
+instead of aborting the install — a worker that will not install leaves the
+previous one in charge indefinitely, which for an app that updates by being
+opened is the one failure with no way out.
 
 Nothing should depend on that never happening, so `applyTranslations` and
 `applyDirection` ignore a missing element instead of throwing, `setLanguage`
