@@ -313,6 +313,27 @@ body {
   white-space: nowrap;
 }
 
+/* --- Out-of-date results -------------------------------------------------- */
+
+.stale-note {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #e3c9a0;
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: #fdf6e8;
+  color: #8a5a12;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* The figures fade while the notice stays sharp, so nothing stale can be
+   mistaken for the current total at a glance. */
+.results.is-stale > *:not(.stale-note) {
+  opacity: 0.4;
+}
+
 /* --- Calculation steps --------------------------------------------------- */
 
 .math {

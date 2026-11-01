@@ -118,6 +118,14 @@
       <!-- Results. Everything inside here is translated, because this is
            the part turned round and shown to the customer. -->
       <section class="card results" id="results" hidden>
+
+        <!-- Shown when an item, discount or tax has been edited since these
+             figures were worked out. The figures are dimmed with it, so a
+             stale total is never handed to a customer as current. -->
+        <p class="stale-note" id="staleNote" hidden data-i18n="outOfDate">
+          These figures are out of date — press Calculate Total again
+        </p>
+
         <div class="original-total">
           <span class="original-label" data-i18n="originalTotal">Original Total</span>
           <span class="original-value" id="rOriginal">$0.00</span>
@@ -245,9 +253,10 @@
 
         <p class="rate-status" id="rateStatus" hidden></p>
 
-        <button type="button" class="btn-secondary" id="retryBtn" hidden data-i18n="tryAgain">
-          Try Again
-        </button>
+        <!-- Always available, not only after a failure: a rate fetched an
+             hour ago is still the rate on screen until someone asks for a
+             new one. Its wording is set in currency.js. -->
+        <button type="button" class="btn-secondary" id="refreshBtn">Update Rate</button>
 
         <!-- Optional override, deliberately tucked away -->
         <details class="manual-rate">

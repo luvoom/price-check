@@ -95,7 +95,9 @@ var TRANSLATIONS = {
     manualInUse: "Manual rate in use",
     savedRate: "Saved rate — no connection right now",
     enterAmount: "Enter a USD amount",
-    rateMissing: "This currency is not available right now"
+    rateMissing: "This currency is not available right now",
+    outOfDate: "These figures are out of date — press Calculate Total again",
+    refreshRate: "Update Rate"
   },
 
   es: {
@@ -143,7 +145,9 @@ var TRANSLATIONS = {
     manualInUse: "Se está usando el tipo de cambio manual",
     savedRate: "Tipo de cambio guardado: ahora no hay conexión",
     enterAmount: "Introduce un importe en USD",
-    rateMissing: "Esta moneda no está disponible ahora mismo"
+    rateMissing: "Esta moneda no está disponible ahora mismo",
+    outOfDate: "Estas cifras están desactualizadas: vuelve a pulsar Calculate Total",
+    refreshRate: "Actualizar el tipo de cambio"
   },
 
   zh: {
@@ -191,7 +195,9 @@ var TRANSLATIONS = {
     manualInUse: "正在使用手动汇率",
     savedRate: "已保存的汇率 — 当前没有网络连接",
     enterAmount: "请输入美元金额",
-    rateMissing: "此货币暂时无法使用"
+    rateMissing: "此货币暂时无法使用",
+    outOfDate: "以下金额已过期，请重新点击 Calculate Total",
+    refreshRate: "更新汇率"
   },
 
   "zh-TW": {
@@ -239,7 +245,9 @@ var TRANSLATIONS = {
     manualInUse: "正在使用手動匯率",
     savedRate: "已儲存的匯率 — 目前沒有網路連線",
     enterAmount: "請輸入美元金額",
-    rateMissing: "此貨幣暫時無法使用"
+    rateMissing: "此貨幣暫時無法使用",
+    outOfDate: "以下金額已過期，請重新點擊 Calculate Total",
+    refreshRate: "更新匯率"
   },
 
   ja: {
@@ -287,7 +295,9 @@ var TRANSLATIONS = {
     manualInUse: "手動レートを使用中",
     savedRate: "保存されたレート（現在オフライン）",
     enterAmount: "米ドル金額を入力してください",
-    rateMissing: "この通貨は現在ご利用いただけません"
+    rateMissing: "この通貨は現在ご利用いただけません",
+    outOfDate: "表示中の金額は古くなっています。もう一度 Calculate Total を押してください",
+    refreshRate: "レートを更新"
   },
 
   ko: {
@@ -335,7 +345,9 @@ var TRANSLATIONS = {
     manualInUse: "수동 환율 사용 중",
     savedRate: "저장된 환율 — 현재 연결되지 않았습니다",
     enterAmount: "미국 달러 금액을 입력하세요",
-    rateMissing: "이 통화는 현재 사용할 수 없습니다"
+    rateMissing: "이 통화는 현재 사용할 수 없습니다",
+    outOfDate: "표시된 금액이 오래되었습니다. Calculate Total을 다시 눌러 주세요",
+    refreshRate: "환율 새로 고침"
   },
 
   fr: {
@@ -383,7 +395,9 @@ var TRANSLATIONS = {
     manualInUse: "Taux manuel utilisé",
     savedRate: "Taux enregistré — aucune connexion pour le moment",
     enterAmount: "Saisissez un montant en USD",
-    rateMissing: "Cette devise n'est pas disponible pour le moment"
+    rateMissing: "Cette devise n'est pas disponible pour le moment",
+    outOfDate: "Ces montants ne sont plus à jour : appuyez de nouveau sur Calculate Total",
+    refreshRate: "Actualiser le taux"
   },
 
   pt: {
@@ -431,7 +445,9 @@ var TRANSLATIONS = {
     manualInUse: "Taxa manual em uso",
     savedRate: "Taxa salva — sem conexão neste momento",
     enterAmount: "Informe um valor em USD",
-    rateMissing: "Esta moeda não está disponível neste momento"
+    rateMissing: "Esta moeda não está disponível neste momento",
+    outOfDate: "Estes valores estão desatualizados: pressione Calculate Total novamente",
+    refreshRate: "Atualizar a taxa"
   },
 
   de: {
@@ -479,7 +495,9 @@ var TRANSLATIONS = {
     manualInUse: "Manueller Kurs wird verwendet",
     savedRate: "Gespeicherter Kurs – derzeit keine Verbindung",
     enterAmount: "Geben Sie einen Betrag in USD ein",
-    rateMissing: "Diese Währung ist derzeit nicht verfügbar"
+    rateMissing: "Diese Währung ist derzeit nicht verfügbar",
+    outOfDate: "Diese Beträge sind nicht mehr aktuell – bitte erneut Calculate Total drücken",
+    refreshRate: "Kurs aktualisieren"
   },
 
   it: {
@@ -527,7 +545,9 @@ var TRANSLATIONS = {
     manualInUse: "Tasso manuale in uso",
     savedRate: "Tasso salvato — al momento non c'è connessione",
     enterAmount: "Inserisci un importo in USD",
-    rateMissing: "Questa valuta non è disponibile al momento"
+    rateMissing: "Questa valuta non è disponibile al momento",
+    outOfDate: "Questi importi non sono più aggiornati: premi di nuovo Calculate Total",
+    refreshRate: "Aggiorna il tasso"
   },
 
   ru: {
@@ -575,7 +595,9 @@ var TRANSLATIONS = {
     manualInUse: "Используется курс, введённый вручную",
     savedRate: "Сохранённый курс — сейчас нет соединения",
     enterAmount: "Введите сумму в долларах США",
-    rateMissing: "Эта валюта сейчас недоступна"
+    rateMissing: "Эта валюта сейчас недоступна",
+    outOfDate: "Эти суммы устарели — нажмите Calculate Total ещё раз",
+    refreshRate: "Обновить курс"
   },
 
   ar: {
@@ -623,7 +645,9 @@ var TRANSLATIONS = {
     manualInUse: "يتم استخدام السعر اليدوي",
     savedRate: "سعر محفوظ — لا يوجد اتصال حاليًا",
     enterAmount: "أدخل مبلغًا بالدولار الأمريكي",
-    rateMissing: "هذه العملة غير متاحة حاليًا"
+    rateMissing: "هذه العملة غير متاحة حاليًا",
+    outOfDate: "هذه المبالغ لم تعد محدّثة — اضغط Calculate Total مرة أخرى",
+    refreshRate: "تحديث سعر الصرف"
   },
 
   hi: {
@@ -671,7 +695,9 @@ var TRANSLATIONS = {
     manualInUse: "मैन्युअल दर उपयोग में है",
     savedRate: "सहेजी गई दर — अभी कोई कनेक्शन नहीं",
     enterAmount: "अमेरिकी डॉलर राशि दर्ज करें",
-    rateMissing: "यह मुद्रा अभी उपलब्ध नहीं है"
+    rateMissing: "यह मुद्रा अभी उपलब्ध नहीं है",
+    outOfDate: "ये राशियाँ पुरानी हो चुकी हैं — Calculate Total फिर से दबाएँ",
+    refreshRate: "दर अपडेट करें"
   },
 
   th: {
@@ -719,7 +745,9 @@ var TRANSLATIONS = {
     manualInUse: "กำลังใช้อัตราที่กรอกเอง",
     savedRate: "อัตราที่บันทึกไว้ — ขณะนี้ไม่มีการเชื่อมต่อ",
     enterAmount: "กรอกจำนวนเงินดอลลาร์สหรัฐ",
-    rateMissing: "ขณะนี้ไม่มีสกุลเงินนี้"
+    rateMissing: "ขณะนี้ไม่มีสกุลเงินนี้",
+    outOfDate: "ยอดเหล่านี้ไม่เป็นปัจจุบันแล้ว — กด Calculate Total อีกครั้ง",
+    refreshRate: "อัปเดตอัตราแลกเปลี่ยน"
   },
 
   vi: {
@@ -767,7 +795,9 @@ var TRANSLATIONS = {
     manualInUse: "Đang dùng tỷ giá nhập tay",
     savedRate: "Tỷ giá đã lưu — hiện không có kết nối",
     enterAmount: "Nhập số tiền USD",
-    rateMissing: "Loại tiền này hiện không khả dụng"
+    rateMissing: "Loại tiền này hiện không khả dụng",
+    outOfDate: "Các số liệu này đã cũ — hãy bấm Calculate Total lần nữa",
+    refreshRate: "Cập nhật tỷ giá"
   }
 };
 

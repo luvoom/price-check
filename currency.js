@@ -78,6 +78,11 @@ var RATE_SOURCES = [
 /* How long to wait on each source before giving up on it. */
 var RATE_TIMEOUT_MS = 8000;
 
+/* How old a rate may be before the view quietly fetches a new one. The
+   screen can be left open for a whole shift, and a rate from this morning
+   should not still be the one shown to a customer this evening. */
+var RATE_MAX_AGE_MS = 30 * 60 * 1000;
+
 /* Name of the saved copy of the last rates that loaded successfully. */
 var RATE_STORE_KEY = "priceCheckRates";
 
@@ -114,7 +119,7 @@ var ccPrice = document.getElementById("ccPrice");
 var rateValue = document.getElementById("rateValue");
 var rateUpdated = document.getElementById("rateUpdated");
 var rateStatus = document.getElementById("rateStatus");
-var retryBtn = document.getElementById("retryBtn");
+var refreshBtn = document.getElementById("refreshBtn");
 
 var autoRateNote = document.getElementById("autoRateNote");
 var manualRateInput = document.getElementById("manualRateInput");
@@ -133,16 +138,11 @@ function findCurrency(code) {
   return null;
 }
 
-/* Turns typed text like " $1,299.00 " into a number. */
+/* Typed amounts are read with parseNumber from script.js, which loads
+   first - one set of rules for every field in the app, including which
+   way round a comma is meant. */
 function toNumber(text) {
-  if (typeof text !== "string") {
-    return NaN;
-  }
-  var cleaned = text.replace(/[$,\s]/g, "");
-  if (cleaned === "") {
-    return NaN;
-  }
-  return Number(cleaned);
+  return parseNumber(text);
 }
 
 /* True when the symbol a format would use is a bare "$" for something that
@@ -348,6 +348,9 @@ function fetchRates() {
 
     fetchSource(source).then(function (result) {
       if (result) {
+        /* When it was taken, not just the day it is quoted for: that is
+           what decides whether it is worth asking again. */
+        result.fetchedAt = Date.now();
         autoRates = result;
         ratesAreSaved = false;
         rateLoading = false;
@@ -361,6 +364,24 @@ function fetchRates() {
   }
 
   tryNext();
+}
+
+/* True when there is no rate yet, when the one in hand came off the phone
+   rather than the network, or when it is simply old. */
+function ratesAreStale() {
+  if (!autoRates || ratesAreSaved) {
+    return true;
+  }
+  if (typeof autoRates.fetchedAt !== "number") {
+    return true;
+  }
+  return Date.now() - autoRates.fetchedAt > RATE_MAX_AGE_MS;
+}
+
+function refreshIfStale() {
+  if (ratesAreStale()) {
+    fetchRates();
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -505,7 +526,11 @@ function render() {
   rateStatus.textContent = status;
   rateStatus.hidden = status === "";
   rateStatus.classList.toggle("is-error", rateFailed);
-  retryBtn.hidden = !rateFailed;
+
+  /* The button is always there. After a failure it asks to try again;
+     otherwise it offers a newer rate than the one on screen. */
+  refreshBtn.textContent = rateFailed ? t("tryAgain") : t("refreshRate");
+  refreshBtn.disabled = rateLoading;
 
   /* The big customer-facing number. */
   if (currency && rate && hasUsd) {
@@ -561,15 +586,13 @@ function openCurrency() {
       autoRates = saved;
       ratesAreSaved = true;
     }
-
-    suggestCurrency();
-    render();
-    fetchRates();
-    return;
   }
 
   suggestCurrency();
   render();
+
+  /* Every opening checks the age of the rate, not just the first one. */
+  refreshIfStale();
 }
 
 function closeCurrency() {
@@ -606,6 +629,12 @@ currencySelect.addEventListener("change", function () {
   /* Picking from the list is a decision; going back to the blank entry is
      not, so the suggestion takes over again. */
   currencyChosenByHand = currencySelect.value !== "";
+
+  /* A rate typed in by hand belongs to the currency it was typed for.
+     Carrying 150 from yen over to euros would quietly convert at
+     1 USD = 150 EUR, so it is cleared and the automatic rate takes over. */
+  manualRateInput.value = "";
+
   render();
 });
 usdAmountInput.addEventListener("input", render);
@@ -616,7 +645,15 @@ useAutoBtn.addEventListener("click", function () {
   render();
 });
 
-retryBtn.addEventListener("click", fetchRates);
+refreshBtn.addEventListener("click", fetchRates);
+
+/* Coming back to a phone that has been asleep, or to a tab left open all
+   shift, is the usual way a stale rate ends up in front of a customer. */
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden && !viewCurrency.hidden) {
+    refreshIfStale();
+  }
+});
 
 /* --------------------------------------------------------------------------
    Start up

@@ -11,6 +11,16 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.10.0",
+    changes: [
+      "Changing a price, quantity, discount or the tax now marks the results as out of date, so an old total is never shown as if it were current",
+      "While they are out of date the Currency Conversion screen no longer fills in that old total",
+      "Typing your own exchange rate and then switching currency no longer keeps the old number — it would have converted at the wrong rate",
+      "Added an Update Rate button that is always available, not only when the rate fails to load",
+      "The exchange rate is also refreshed on its own when it is more than half an hour old, or when you come back to a phone that has been asleep"
+    ]
+  },
+  {
     version: "0.9.3",
     changes: [
       "The currency now follows the language you pick, so choosing 日本語 no longer leaves the price in Mexican pesos",
@@ -25,14 +35,6 @@ var VERSION_HISTORY = [
       "The phone could end up running part of the new app and part of the old one, which stopped the language from changing",
       "Updates now always come from the internet rather than from a copy the phone kept, so the whole app changes together",
       "If anything ever does get out of step, the language menu now keeps working instead of going quiet"
-    ]
-  },
-  {
-    version: "0.9.1",
-    changes: [
-      "The Language menu now sits at the top of the screen, so it is there as soon as the app opens",
-      "Before, it only appeared after you pressed Calculate Total",
-      "Picking a language there also changes the Currency Conversion button straight away"
     ]
   }
 ];
@@ -88,6 +90,7 @@ var versionBody = document.getElementById("versionBody");
 
 var resultLanguage = document.getElementById("resultLanguage");
 var langRow = document.getElementById("langRow");
+var staleNote = document.getElementById("staleNote");
 
 /* The last set of numbers worked out, kept so the results can be drawn
    again in another language without recalculating anything. */
@@ -140,6 +143,28 @@ function addStep(label, expression, result) {
   item.appendChild(answer);
 
   mathSteps.appendChild(item);
+}
+
+/* --------------------------------------------------------------------------
+   Out-of-date results
+   Changing an item, a discount or the tax rate does not recalculate on its
+   own. Until Calculate Total is pressed again the figures on screen belong
+   to the previous set of inputs, so they are marked as such and the Final
+   Total is withdrawn - the Currency Conversion screen must never be handed
+   a total that no longer matches what is in front of the customer.
+   -------------------------------------------------------------------------- */
+function markResultsOutOfDate() {
+  if (lastResult === null || resultsEl.hidden) {
+    return;
+  }
+  resultsEl.classList.add("is-stale");
+  staleNote.hidden = false;
+  window.PriceCheck.finalTotal = null;
+}
+
+function markResultsCurrent() {
+  resultsEl.classList.remove("is-stale");
+  staleNote.hidden = true;
 }
 
 function showError(message) {
@@ -525,6 +550,7 @@ function calculate() {
 
   renderResults();
   resultsEl.hidden = false;
+  markResultsCurrent();
 
   /* Hand the total to the Currency Conversion screen. */
   window.PriceCheck.finalTotal = finalTotal;
@@ -665,6 +691,7 @@ function reset() {
   clearError();
   resultsEl.hidden = true;
   lastResult = null;
+  markResultsCurrent();
   window.PriceCheck.finalTotal = null;
 }
 
@@ -673,6 +700,24 @@ function reset() {
    -------------------------------------------------------------------------- */
 calcBtn.addEventListener("click", calculate);
 resetBtn.addEventListener("click", reset);
+
+/* Anything that would change the answer marks the figures as out of date.
+   The item rows are listened to as a whole, so rows added later are
+   covered without wiring each one up. */
+itemRows.addEventListener("input", markResultsOutOfDate);
+itemRows.addEventListener("change", markResultsOutOfDate);
+itemRows.addEventListener("click", function (event) {
+  if (event.target.className.indexOf("item-remove") !== -1) {
+    markResultsOutOfDate();
+  }
+});
+addItemBtn.addEventListener("click", markResultsOutOfDate);
+additionalInput.addEventListener("input", markResultsOutOfDate);
+taxInput.addEventListener("input", markResultsOutOfDate);
+
+for (var staleChip = 0; staleChip < additionalChips.length; staleChip++) {
+  additionalChips[staleChip].addEventListener("click", markResultsOutOfDate);
+}
 
 /* Pressing Return on the keyboard calculates. */
 function calculateOnEnter(event) {

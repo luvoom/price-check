@@ -13,6 +13,13 @@ only the currency converter asks for a live exchange rate.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.10.0
+- Changing a price, quantity, discount or the tax now marks the results as out of date, so an old total is never shown as if it were current
+- While they are out of date the Currency Conversion screen no longer fills in that old total
+- Typing your own exchange rate and then switching currency no longer keeps the old number — it would have converted at the wrong rate
+- Added an Update Rate button that is always available, not only when the rate fails to load
+- The exchange rate is also refreshed on its own when it is more than half an hour old, or when you come back to a phone that has been asleep
+
 ### Version 0.9.3
 - The currency now follows the language you pick, so choosing 日本語 no longer leaves the price in Mexican pesos
 - If you pick a currency from the list yourself, it is kept and the language never changes it
@@ -23,11 +30,6 @@ source of truth. Update that list first, then copy it here.)*
 - The phone could end up running part of the new app and part of the old one, which stopped the language from changing
 - Updates now always come from the internet rather than from a copy the phone kept, so the whole app changes together
 - If anything ever does get out of step, the language menu now keeps working instead of going quiet
-
-### Version 0.9.1
-- The Language menu now sits at the top of the screen, so it is there as soon as the app opens
-- Before, it only appeared after you pressed Calculate Total
-- Picking a language there also changes the Currency Conversion button straight away
 
 
 
@@ -141,14 +143,36 @@ function that normalises the response to `{ rates, updated }`:
    does not quote TWD, which then reports as unavailable rather than wrong.
 
 Each source gets `RATE_TIMEOUT_MS` (8s). The first that answers wins. A
-successful response is saved to `localStorage` under `priceCheckRates`, so a
-reopen shows the last known rate immediately — labelled as saved — while a
-refresh runs. If every source fails and nothing is saved, the view shows the
-translated error and a *Try Again* button; conversion is simply unavailable
+successful response is stamped with `fetchedAt` and saved to `localStorage`
+under `priceCheckRates`, so a reopen shows the last known rate immediately —
+labelled as saved — while a refresh runs. If every source fails and nothing is
+saved, the view shows the translated error; conversion is simply unavailable
 until a rate exists.
 
+`ratesAreStale()` is true with no rate, with one restored from storage, or
+with one older than `RATE_MAX_AGE_MS` (30 min). `refreshIfStale()` runs it on
+every opening of the view and whenever the page becomes visible again while
+the view is open, which covers the screen being left open through a shift and
+a phone coming back from sleep. The refresh button is always on screen rather
+than only after a failure — a rate fetched an hour ago is still the rate on
+display until someone asks for a newer one — and it reads *Try Again* when the
+last attempt failed.
+
 A positive number typed into the manual field takes precedence over the
-automatic rate for as long as it is there; *Use Automatic Rate* clears it.
+automatic rate for as long as it is there; *Use Automatic Rate* clears it, and
+so does changing currency: a rate is typed for one currency, and carrying 150
+from yen into euros would have quietly converted at 1 USD = 150 EUR.
+
+### Out-of-date results
+
+Nothing recalculates as you type, so after an edit the figures on screen
+belong to the previous inputs. `markResultsOutOfDate()` — wired to the item
+rows as a whole, the Add Item button, the discount chips and field, and the
+tax field — adds `is-stale` to the results card, shows the translated notice
+and sets `window.PriceCheck.finalTotal` back to `null`. The figures fade while
+the notice does not, and the converter has no total to prefill, so a stale
+number cannot reach a customer as the current one. `calculate()` and `reset()`
+clear the state.
 
 Amounts use `Intl.NumberFormat` with the chosen language's locale and the
 `decimals` field from `CURRENCIES` (0 for JPY, KRW, TWD, VND). `narrow: true`
