@@ -11,6 +11,16 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.11.0",
+    changes: [
+      "The exchange rate is now downloaded once a day and kept on the phone, so the converter keeps working all day with no signal",
+      "Opening Currency Conversion no longer downloads anything if today's rate is already saved",
+      "The screen says where the rate came from: today's saved rate, a rate from an earlier day, or one you typed in",
+      "A rate from an earlier day still converts — it just shows which day it is from",
+      "If an update fails but a saved rate is there, the price still shows instead of an error"
+    ]
+  },
+  {
     version: "0.10.1",
     changes: [
       "Fixed updates not reaching the phone at all: the app could keep opening an old copy no matter how many times it was closed and reopened",
@@ -28,14 +38,6 @@ var VERSION_HISTORY = [
       "The exchange rate is also refreshed on its own when it is more than half an hour old, or when you come back to a phone that has been asleep"
     ]
   },
-  {
-    version: "0.9.3",
-    changes: [
-      "The currency now follows the language you pick, so choosing 日本語 no longer leaves the price in Mexican pesos",
-      "If you pick a currency from the list yourself, it is kept and the language never changes it",
-      "The Currency Conversion button always reads in the language currently chosen"
-    ]
-  }
 ];
 
 /* Default sales tax rate, used on load and after Reset. */

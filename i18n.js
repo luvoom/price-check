@@ -93,11 +93,16 @@ var TRANSLATIONS = {
     automaticRate: "Automatic Rate",
     useAutomaticRate: "Use Automatic Rate",
     manualInUse: "Manual rate in use",
-    savedRate: "Saved rate — no connection right now",
+    savedRate: "Using saved exchange rate",
     enterAmount: "Enter a USD amount",
     rateMissing: "This currency is not available right now",
     outOfDate: "These figures are out of date — press Calculate Total again",
-    refreshRate: "Update Rate"
+    refreshRate: "Update Rate",
+    savedRateToday: "Today's saved rate",
+    oldRate: "Using exchange rate from {0}",
+    rateUpdatedAt: "Rate updated: {0}",
+    rateUpdateFailed: "Could not update the rate — the saved one is still in use",
+    noSavedRate: "No exchange rate saved yet. Connect to the internet and press Update Rate, or type a rate in by hand."
   },
 
   es: {
@@ -143,11 +148,16 @@ var TRANSLATIONS = {
     automaticRate: "Tipo de cambio automático",
     useAutomaticRate: "Usar el tipo de cambio automático",
     manualInUse: "Se está usando el tipo de cambio manual",
-    savedRate: "Tipo de cambio guardado: ahora no hay conexión",
+    savedRate: "Se está usando el tipo de cambio guardado",
     enterAmount: "Introduce un importe en USD",
     rateMissing: "Esta moneda no está disponible ahora mismo",
     outOfDate: "Estas cifras están desactualizadas: vuelve a pulsar Calculate Total",
-    refreshRate: "Actualizar el tipo de cambio"
+    refreshRate: "Actualizar el tipo de cambio",
+    savedRateToday: "Tipo de cambio guardado hoy",
+    oldRate: "Se está usando el tipo de cambio del {0}",
+    rateUpdatedAt: "Tipo de cambio actualizado: {0}",
+    rateUpdateFailed: "No se pudo actualizar el tipo de cambio; se sigue usando el guardado",
+    noSavedRate: "Todavía no hay ningún tipo de cambio guardado. Conéctate a internet y pulsa Actualizar, o escribe el tipo de cambio a mano."
   },
 
   zh: {
@@ -193,11 +203,16 @@ var TRANSLATIONS = {
     automaticRate: "自动汇率",
     useAutomaticRate: "使用自动汇率",
     manualInUse: "正在使用手动汇率",
-    savedRate: "已保存的汇率 — 当前没有网络连接",
+    savedRate: "正在使用已保存的汇率",
     enterAmount: "请输入美元金额",
     rateMissing: "此货币暂时无法使用",
     outOfDate: "以下金额已过期，请重新点击 Calculate Total",
-    refreshRate: "更新汇率"
+    refreshRate: "更新汇率",
+    savedRateToday: "今天保存的汇率",
+    oldRate: "正在使用 {0} 的汇率",
+    rateUpdatedAt: "汇率更新时间：{0}",
+    rateUpdateFailed: "无法更新汇率，仍在使用已保存的汇率",
+    noSavedRate: "尚未保存任何汇率。请连接网络后点击更新汇率，或手动输入汇率。"
   },
 
   "zh-TW": {
@@ -243,11 +258,16 @@ var TRANSLATIONS = {
     automaticRate: "自動匯率",
     useAutomaticRate: "使用自動匯率",
     manualInUse: "正在使用手動匯率",
-    savedRate: "已儲存的匯率 — 目前沒有網路連線",
+    savedRate: "正在使用已儲存的匯率",
     enterAmount: "請輸入美元金額",
     rateMissing: "此貨幣暫時無法使用",
     outOfDate: "以下金額已過期，請重新點擊 Calculate Total",
-    refreshRate: "更新匯率"
+    refreshRate: "更新匯率",
+    savedRateToday: "今天儲存的匯率",
+    oldRate: "正在使用 {0} 的匯率",
+    rateUpdatedAt: "匯率更新時間：{0}",
+    rateUpdateFailed: "無法更新匯率，仍在使用已儲存的匯率",
+    noSavedRate: "尚未儲存任何匯率。請連線後點擊更新匯率，或手動輸入匯率。"
   },
 
   ja: {
@@ -293,11 +313,16 @@ var TRANSLATIONS = {
     automaticRate: "自動レート",
     useAutomaticRate: "自動レートを使う",
     manualInUse: "手動レートを使用中",
-    savedRate: "保存されたレート（現在オフライン）",
+    savedRate: "保存されたレートを使用中",
     enterAmount: "米ドル金額を入力してください",
     rateMissing: "この通貨は現在ご利用いただけません",
     outOfDate: "表示中の金額は古くなっています。もう一度 Calculate Total を押してください",
-    refreshRate: "レートを更新"
+    refreshRate: "レートを更新",
+    savedRateToday: "本日取得したレート",
+    oldRate: "{0} のレートを使用中",
+    rateUpdatedAt: "レート取得日時: {0}",
+    rateUpdateFailed: "レートを更新できませんでした。保存されたレートを使用中です",
+    noSavedRate: "レートがまだ保存されていません。通信できる場所でレートを更新を押すか、手動でレートを入力してください。"
   },
 
   ko: {
@@ -343,11 +368,16 @@ var TRANSLATIONS = {
     automaticRate: "자동 환율",
     useAutomaticRate: "자동 환율 사용",
     manualInUse: "수동 환율 사용 중",
-    savedRate: "저장된 환율 — 현재 연결되지 않았습니다",
+    savedRate: "저장된 환율을 사용 중",
     enterAmount: "미국 달러 금액을 입력하세요",
     rateMissing: "이 통화는 현재 사용할 수 없습니다",
     outOfDate: "표시된 금액이 오래되었습니다. Calculate Total을 다시 눌러 주세요",
-    refreshRate: "환율 새로 고침"
+    refreshRate: "환율 새로 고침",
+    savedRateToday: "오늘 저장된 환율",
+    oldRate: "{0} 환율을 사용 중",
+    rateUpdatedAt: "환율 업데이트: {0}",
+    rateUpdateFailed: "환율을 업데이트할 수 없습니다. 저장된 환율을 계속 사용합니다",
+    noSavedRate: "저장된 환율이 없습니다. 인터넷에 연결한 뒤 환율 새로 고침을 누르거나 직접 환율을 입력해 주세요."
   },
 
   fr: {
@@ -393,11 +423,16 @@ var TRANSLATIONS = {
     automaticRate: "Taux automatique",
     useAutomaticRate: "Utiliser le taux automatique",
     manualInUse: "Taux manuel utilisé",
-    savedRate: "Taux enregistré — aucune connexion pour le moment",
+    savedRate: "Taux enregistré utilisé",
     enterAmount: "Saisissez un montant en USD",
     rateMissing: "Cette devise n'est pas disponible pour le moment",
     outOfDate: "Ces montants ne sont plus à jour : appuyez de nouveau sur Calculate Total",
-    refreshRate: "Actualiser le taux"
+    refreshRate: "Actualiser le taux",
+    savedRateToday: "Taux enregistré aujourd'hui",
+    oldRate: "Taux du {0} utilisé",
+    rateUpdatedAt: "Taux mis à jour : {0}",
+    rateUpdateFailed: "Impossible d'actualiser le taux ; le taux enregistré reste utilisé",
+    noSavedRate: "Aucun taux enregistré. Connectez-vous à Internet et appuyez sur Actualiser le taux, ou saisissez un taux à la main."
   },
 
   pt: {
@@ -443,11 +478,16 @@ var TRANSLATIONS = {
     automaticRate: "Taxa automática",
     useAutomaticRate: "Usar a taxa automática",
     manualInUse: "Taxa manual em uso",
-    savedRate: "Taxa salva — sem conexão neste momento",
+    savedRate: "Usando a taxa salva",
     enterAmount: "Informe um valor em USD",
     rateMissing: "Esta moeda não está disponível neste momento",
     outOfDate: "Estes valores estão desatualizados: pressione Calculate Total novamente",
-    refreshRate: "Atualizar a taxa"
+    refreshRate: "Atualizar a taxa",
+    savedRateToday: "Taxa salva hoje",
+    oldRate: "Usando a taxa de {0}",
+    rateUpdatedAt: "Taxa atualizada: {0}",
+    rateUpdateFailed: "Não foi possível atualizar a taxa; a taxa salva continua em uso",
+    noSavedRate: "Nenhuma taxa salva ainda. Conecte-se à internet e toque em Atualizar a taxa, ou digite uma taxa manualmente."
   },
 
   de: {
@@ -493,11 +533,16 @@ var TRANSLATIONS = {
     automaticRate: "Automatischer Kurs",
     useAutomaticRate: "Automatischen Kurs verwenden",
     manualInUse: "Manueller Kurs wird verwendet",
-    savedRate: "Gespeicherter Kurs – derzeit keine Verbindung",
+    savedRate: "Gespeicherter Kurs wird verwendet",
     enterAmount: "Geben Sie einen Betrag in USD ein",
     rateMissing: "Diese Währung ist derzeit nicht verfügbar",
     outOfDate: "Diese Beträge sind nicht mehr aktuell – bitte erneut Calculate Total drücken",
-    refreshRate: "Kurs aktualisieren"
+    refreshRate: "Kurs aktualisieren",
+    savedRateToday: "Heute gespeicherter Kurs",
+    oldRate: "Kurs vom {0} wird verwendet",
+    rateUpdatedAt: "Kurs aktualisiert: {0}",
+    rateUpdateFailed: "Kurs konnte nicht aktualisiert werden – der gespeicherte Kurs wird weiter verwendet",
+    noSavedRate: "Es ist noch kein Kurs gespeichert. Stellen Sie eine Internetverbindung her und drücken Sie Kurs aktualisieren, oder geben Sie einen Kurs von Hand ein."
   },
 
   it: {
@@ -543,11 +588,16 @@ var TRANSLATIONS = {
     automaticRate: "Tasso automatico",
     useAutomaticRate: "Usa il tasso automatico",
     manualInUse: "Tasso manuale in uso",
-    savedRate: "Tasso salvato — al momento non c'è connessione",
+    savedRate: "Si sta usando il tasso salvato",
     enterAmount: "Inserisci un importo in USD",
     rateMissing: "Questa valuta non è disponibile al momento",
     outOfDate: "Questi importi non sono più aggiornati: premi di nuovo Calculate Total",
-    refreshRate: "Aggiorna il tasso"
+    refreshRate: "Aggiorna il tasso",
+    savedRateToday: "Tasso salvato oggi",
+    oldRate: "Si sta usando il tasso del {0}",
+    rateUpdatedAt: "Tasso aggiornato: {0}",
+    rateUpdateFailed: "Non è stato possibile aggiornare il tasso; resta in uso quello salvato",
+    noSavedRate: "Nessun tasso salvato. Collegati a internet e premi Aggiorna il tasso, oppure inseriscilo a mano."
   },
 
   ru: {
@@ -593,11 +643,16 @@ var TRANSLATIONS = {
     automaticRate: "Автоматический курс",
     useAutomaticRate: "Использовать автоматический курс",
     manualInUse: "Используется курс, введённый вручную",
-    savedRate: "Сохранённый курс — сейчас нет соединения",
+    savedRate: "Используется сохранённый курс",
     enterAmount: "Введите сумму в долларах США",
     rateMissing: "Эта валюта сейчас недоступна",
     outOfDate: "Эти суммы устарели — нажмите Calculate Total ещё раз",
-    refreshRate: "Обновить курс"
+    refreshRate: "Обновить курс",
+    savedRateToday: "Курс, сохранённый сегодня",
+    oldRate: "Используется курс за {0}",
+    rateUpdatedAt: "Курс обновлён: {0}",
+    rateUpdateFailed: "Не удалось обновить курс — используется сохранённый",
+    noSavedRate: "Курс ещё не сохранён. Подключитесь к интернету и нажмите «Обновить курс» или введите курс вручную."
   },
 
   ar: {
@@ -643,11 +698,16 @@ var TRANSLATIONS = {
     automaticRate: "سعر الصرف التلقائي",
     useAutomaticRate: "استخدام السعر التلقائي",
     manualInUse: "يتم استخدام السعر اليدوي",
-    savedRate: "سعر محفوظ — لا يوجد اتصال حاليًا",
+    savedRate: "يتم استخدام سعر الصرف المحفوظ",
     enterAmount: "أدخل مبلغًا بالدولار الأمريكي",
     rateMissing: "هذه العملة غير متاحة حاليًا",
     outOfDate: "هذه المبالغ لم تعد محدّثة — اضغط Calculate Total مرة أخرى",
-    refreshRate: "تحديث سعر الصرف"
+    refreshRate: "تحديث سعر الصرف",
+    savedRateToday: "سعر الصرف المحفوظ اليوم",
+    oldRate: "يتم استخدام سعر صرف {0}",
+    rateUpdatedAt: "تم تحديث سعر الصرف: {0}",
+    rateUpdateFailed: "لم يتم تحديث سعر الصرف — ما زال السعر المحفوظ مستخدمًا",
+    noSavedRate: "لا يوجد سعر صرف محفوظ بعد. اتصل بالإنترنت واضغط على تحديث سعر الصرف، أو أدخل السعر يدويًا."
   },
 
   hi: {
@@ -693,11 +753,16 @@ var TRANSLATIONS = {
     automaticRate: "स्वचालित दर",
     useAutomaticRate: "स्वचालित दर का उपयोग करें",
     manualInUse: "मैन्युअल दर उपयोग में है",
-    savedRate: "सहेजी गई दर — अभी कोई कनेक्शन नहीं",
+    savedRate: "सहेजी गई दर का उपयोग हो रहा है",
     enterAmount: "अमेरिकी डॉलर राशि दर्ज करें",
     rateMissing: "यह मुद्रा अभी उपलब्ध नहीं है",
     outOfDate: "ये राशियाँ पुरानी हो चुकी हैं — Calculate Total फिर से दबाएँ",
-    refreshRate: "दर अपडेट करें"
+    refreshRate: "दर अपडेट करें",
+    savedRateToday: "आज सहेजी गई दर",
+    oldRate: "{0} की दर का उपयोग हो रहा है",
+    rateUpdatedAt: "दर अपडेट हुई: {0}",
+    rateUpdateFailed: "दर अपडेट नहीं हो सकी — सहेजी गई दर ही उपयोग में है",
+    noSavedRate: "अभी कोई दर सहेजी नहीं गई है। इंटरनेट से जुड़कर दर अपडेट करें दबाएँ, या दर हाथ से भरें।"
   },
 
   th: {
@@ -743,11 +808,16 @@ var TRANSLATIONS = {
     automaticRate: "อัตราอัตโนมัติ",
     useAutomaticRate: "ใช้อัตราอัตโนมัติ",
     manualInUse: "กำลังใช้อัตราที่กรอกเอง",
-    savedRate: "อัตราที่บันทึกไว้ — ขณะนี้ไม่มีการเชื่อมต่อ",
+    savedRate: "กำลังใช้อัตราแลกเปลี่ยนที่บันทึกไว้",
     enterAmount: "กรอกจำนวนเงินดอลลาร์สหรัฐ",
     rateMissing: "ขณะนี้ไม่มีสกุลเงินนี้",
     outOfDate: "ยอดเหล่านี้ไม่เป็นปัจจุบันแล้ว — กด Calculate Total อีกครั้ง",
-    refreshRate: "อัปเดตอัตราแลกเปลี่ยน"
+    refreshRate: "อัปเดตอัตราแลกเปลี่ยน",
+    savedRateToday: "อัตราที่บันทึกไว้วันนี้",
+    oldRate: "กำลังใช้อัตราของวันที่ {0}",
+    rateUpdatedAt: "อัปเดตอัตราเมื่อ: {0}",
+    rateUpdateFailed: "อัปเดตอัตราไม่สำเร็จ — ยังใช้อัตราที่บันทึกไว้",
+    noSavedRate: "ยังไม่มีอัตราแลกเปลี่ยนที่บันทึกไว้ กรุณาเชื่อมต่ออินเทอร์เน็ตแล้วกดอัปเดตอัตราแลกเปลี่ยน หรือกรอกอัตราเอง"
   },
 
   vi: {
@@ -793,11 +863,16 @@ var TRANSLATIONS = {
     automaticRate: "Tỷ giá tự động",
     useAutomaticRate: "Dùng tỷ giá tự động",
     manualInUse: "Đang dùng tỷ giá nhập tay",
-    savedRate: "Tỷ giá đã lưu — hiện không có kết nối",
+    savedRate: "Đang dùng tỷ giá đã lưu",
     enterAmount: "Nhập số tiền USD",
     rateMissing: "Loại tiền này hiện không khả dụng",
     outOfDate: "Các số liệu này đã cũ — hãy bấm Calculate Total lần nữa",
-    refreshRate: "Cập nhật tỷ giá"
+    refreshRate: "Cập nhật tỷ giá",
+    savedRateToday: "Tỷ giá đã lưu hôm nay",
+    oldRate: "Đang dùng tỷ giá ngày {0}",
+    rateUpdatedAt: "Tỷ giá cập nhật: {0}",
+    rateUpdateFailed: "Không cập nhật được tỷ giá — vẫn đang dùng tỷ giá đã lưu",
+    noSavedRate: "Chưa lưu tỷ giá nào. Hãy kết nối internet rồi bấm Cập nhật tỷ giá, hoặc nhập tỷ giá bằng tay."
   }
 };
 

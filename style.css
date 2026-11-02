@@ -893,6 +893,30 @@ body {
 .cc-main-value.is-long { font-size: 42px; }
 .cc-main-value.is-xlong { font-size: 32px; }
 
+/* Where the rate came from, and when it was downloaded. Deliberately
+   quiet: it sits under the converted price and must never compete with
+   it. The old-rate wording is the one exception - it is still readable
+   at a glance, because a rate from yesterday is worth noticing. */
+
+.cc-source {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--gray-text);
+}
+
+.cc-source.is-old {
+  color: #8a5a12;
+}
+
+.cc-rate-time {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--gray-text);
+}
+
 .cc-disclaimer {
   margin: 14px 0 0;
   font-size: 12px;

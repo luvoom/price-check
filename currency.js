@@ -78,11 +78,6 @@ var RATE_SOURCES = [
 /* How long to wait on each source before giving up on it. */
 var RATE_TIMEOUT_MS = 8000;
 
-/* How old a rate may be before the view quietly fetches a new one. The
-   screen can be left open for a whole shift, and a rate from this morning
-   should not still be the one shown to a customer this evening. */
-var RATE_MAX_AGE_MS = 30 * 60 * 1000;
-
 /* Name of the saved copy of the last rates that loaded successfully. */
 var RATE_STORE_KEY = "priceCheckRates";
 
@@ -94,11 +89,21 @@ var RATE_STORE_KEY = "priceCheckRates";
    a new language is free to replace it. */
 var currencyChosenByHand = false;
 
-var autoRates = null;      /* { rates: {...}, updated: "..." } or null */
-var ratesAreSaved = false; /* true when autoRates came off the phone, not the network */
+/* The one set of rates in hand, whether it was downloaded a minute ago or
+   read back off the phone this morning:
+   { rates: {...}, updated: "...", fetchedAt: 1762..., fetchedDay: "2026-11-01" } */
+var autoRates = null;
+
 var rateLoading = false;
+
+/* True when the last attempt to download rates came back with nothing. On
+   its own that is not an error - there may be a perfectly good saved rate
+   to carry on with. */
+var lastAttemptFailed = false;
+
+/* True only when there is nothing usable at all: the download failed and
+   nothing was saved. */
 var rateFailed = false;
-var hasLoadedOnce = false;
 
 /* --------------------------------------------------------------------------
    Element references
@@ -115,6 +120,8 @@ var currencySelect = document.getElementById("currencySelect");
 
 var ccUsd = document.getElementById("ccUsd");
 var ccPrice = document.getElementById("ccPrice");
+var ccSource = document.getElementById("ccSource");
+var ccRateTime = document.getElementById("ccRateTime");
 
 var rateValue = document.getElementById("rateValue");
 var rateUpdated = document.getElementById("rateUpdated");
@@ -218,7 +225,65 @@ function formatRate(rate) {
   }
 }
 
-/* "Sat, 31 Oct 2026 00:02:31 +0000" or "2026-10-30" -> a short local date. */
+/* --------------------------------------------------------------------------
+   Dates and times
+   "Today" means the day on the phone in front of you, not UTC: rates
+   downloaded at 8am in Las Vegas are still this morning's rates at 6pm,
+   even though it is already tomorrow in London.
+   -------------------------------------------------------------------------- */
+
+function pad2(number) {
+  return (number < 10 ? "0" : "") + number;
+}
+
+/* A moment in time as the phone's own calendar day: "2026-11-01". Written
+   out rather than compared with Date objects so that two days are the same
+   day only when the phone says they are. */
+function localDay(ms) {
+  var when = new Date(ms);
+  return when.getFullYear() + "-" + pad2(when.getMonth() + 1) + "-" + pad2(when.getDate());
+}
+
+/* The clock time on the phone: "08:15". Saved purely so the stored record
+   is readable; nothing is decided from it. */
+function localTime(ms) {
+  var when = new Date(ms);
+  return pad2(when.getHours()) + ":" + pad2(when.getMinutes());
+}
+
+/* "Nov 1, 2026, 8:15 AM" in the customer's language. */
+function formatDateTime(ms) {
+  var when = new Date(ms);
+  try {
+    return when.toLocaleString(currentLocale(), {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    });
+  } catch (error) {
+    return when.toString();
+  }
+}
+
+/* "Oct 31, 2026" - the day on its own, for the old-rate warning. */
+function formatDay(ms) {
+  var when = new Date(ms);
+  try {
+    return when.toLocaleDateString(currentLocale(), {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  } catch (error) {
+    return when.toDateString();
+  }
+}
+
+/* "Sat, 31 Oct 2026 00:02:31 +0000" or "2026-10-30" -> a short local date.
+   Only used for rates saved by an older version of the app, which recorded
+   the day the rate was quoted for but not when it was downloaded. */
 function formatUpdated(text) {
   if (!text) {
     return "—";
@@ -257,9 +322,17 @@ function currencyLabel(currency) {
 }
 
 /* --------------------------------------------------------------------------
-   Saving the last good rates on the phone
-   So the view still shows something useful on a dead signal. Wrapped in
-   try/catch because private browsing can refuse storage outright.
+   Saving the day's rates on the phone
+
+   This is what makes the converter work through a shift with no signal:
+   load the rates once in the morning and they stay on the phone, through
+   closing the app, reopening it, and opening it from the Home Screen.
+
+   Saved alongside the rates are the day and the time they were downloaded.
+   The day is what decides whether they still count as today's; the time is
+   there so the screen can say exactly how old they are.
+
+   Wrapped in try/catch because private browsing can refuse storage outright.
    -------------------------------------------------------------------------- */
 function saveRates(result) {
   try {
@@ -330,6 +403,7 @@ function fetchRates() {
   }
   rateLoading = true;
   rateFailed = false;
+  lastAttemptFailed = false;
   render();
 
   var index = 0;
@@ -337,7 +411,10 @@ function fetchRates() {
   function tryNext() {
     if (index >= RATE_SOURCES.length) {
       rateLoading = false;
-      /* Only a hard failure if there is nothing saved to fall back on. */
+      lastAttemptFailed = true;
+      /* Only a hard failure if there is nothing saved to fall back on. A
+         saved rate means the conversion still works, so the screen says
+         the update did not go through rather than showing an error. */
       rateFailed = autoRates === null;
       render();
       return;
@@ -348,14 +425,20 @@ function fetchRates() {
 
     fetchSource(source).then(function (result) {
       if (result) {
-        /* When it was taken, not just the day it is quoted for: that is
-           what decides whether it is worth asking again. */
-        result.fetchedAt = Date.now();
+        /* When it was downloaded, not just the day it is quoted for: that
+           is what decides whether it still counts as today's rate. */
+        var now = Date.now();
+        result.fetchedAt = now;
+        result.fetchedDay = localDay(now);
+        result.fetchedTime = localTime(now);
+
         autoRates = result;
-        ratesAreSaved = false;
         rateLoading = false;
         rateFailed = false;
+        lastAttemptFailed = false;
         saveRates(result);
+
+        /* The price on screen is redrawn from the new rate straight away. */
         render();
         return;
       }
@@ -366,26 +449,66 @@ function fetchRates() {
   tryNext();
 }
 
-/* True when there is no rate yet, when the one in hand came off the phone
-   rather than the network, or when it is simply old. */
-function ratesAreStale() {
-  if (!autoRates || ratesAreSaved) {
-    return true;
+/* When the rates in hand were downloaded, or null if that is not recorded
+   (a rate saved by a much older version of the app). */
+function ratesFetchedAt() {
+  if (autoRates && typeof autoRates.fetchedAt === "number" && !isNaN(autoRates.fetchedAt)) {
+    return autoRates.fetchedAt;
   }
-  if (typeof autoRates.fetchedAt !== "number") {
-    return true;
-  }
-  return Date.now() - autoRates.fetchedAt > RATE_MAX_AGE_MS;
+  return null;
 }
 
-function refreshIfStale() {
-  if (ratesAreStale()) {
-    fetchRates();
+/* True when the rates in hand were downloaded today, on this phone's own
+   calendar. This is the whole point of the daily cache: while it is true,
+   nothing is downloaded. */
+function ratesAreFromToday() {
+  if (!autoRates) {
+    return false;
   }
+  var today = localDay(Date.now());
+
+  /* The day written down at the moment of downloading is the honest
+     answer, so it wins over working it out again now. */
+  if (typeof autoRates.fetchedDay === "string") {
+    return autoRates.fetchedDay === today;
+  }
+
+  var when = ratesFetchedAt();
+  return when !== null && localDay(when) === today;
+}
+
+/* The phone's own opinion of whether it is connected. Only ever used to
+   skip an attempt nobody asked for: it is wrong often enough - hotel wifi,
+   a sign-in page - that it must never be what stops someone who has
+   deliberately pressed Update Rate. */
+function looksOffline() {
+  return typeof navigator !== "undefined" && navigator.onLine === false;
+}
+
+/* Downloads today's rates, but only if they are not already here. Pressing
+   Update Rate calls fetchRates directly and ignores all of this. */
+function refreshIfNeeded() {
+  if (ratesAreFromToday()) {
+    return;
+  }
+  if (looksOffline()) {
+    return;
+  }
+  fetchRates();
 }
 
 /* --------------------------------------------------------------------------
    The rate actually in use
+
+   In order of preference:
+     1. a rate typed in by hand, for as long as it is in the box
+     2. the saved rates, if they were downloaded today
+     3. the saved rates from whichever day they are from
+     4. nothing - and then a download is attempted, if there is a signal
+
+   2 and 3 are the same saved set; only one is ever kept, so the choice
+   between them is really only about what the screen says about its age.
+   Nothing here touches the network: a conversion never waits on it.
    -------------------------------------------------------------------------- */
 
 /* Returns { rate, manual } or null when no usable rate exists yet. */
@@ -498,34 +621,77 @@ function render() {
     autoRateNote.textContent = t("automaticRate") + ": —";
   }
 
+  var fetchedAt = ratesFetchedAt();
+  var fromToday = ratesAreFromToday();
+
   /* The rate rows. */
   if (currency && rate) {
     rateValue.textContent = "1 USD = " + formatRate(rate.rate) + " " + code;
-    rateUpdated.textContent = rate.manual
-      ? t("manualInUse")
-      : formatUpdated(autoRates ? autoRates.updated : "");
+    if (rate.manual) {
+      rateUpdated.textContent = t("manualInUse");
+    } else if (fetchedAt !== null) {
+      rateUpdated.textContent = formatDateTime(fetchedAt);
+    } else {
+      rateUpdated.textContent = formatUpdated(autoRates ? autoRates.updated : "");
+    }
   } else {
     rateValue.textContent = rateLoading ? t("loading") : "—";
     rateUpdated.textContent = "—";
   }
 
-  /* One short status line under the rate, whichever applies. */
+  /* Where the number being shown to the customer came from, in their own
+     language and kept small: it belongs under the price, not beside it. */
+  var source = "";
+  var sourceIsOld = false;
+  if (currency && rate) {
+    if (rate.manual) {
+      source = t("manualInUse");
+    } else if (fromToday) {
+      source = t("savedRateToday");
+    } else if (fetchedAt !== null) {
+      /* Still perfectly usable - just worth saying out loud how old it is. */
+      source = tf("oldRate", formatDay(fetchedAt));
+      sourceIsOld = true;
+    } else {
+      source = t("savedRate");
+    }
+  }
+
+  ccSource.textContent = source;
+  ccSource.hidden = source === "";
+  ccSource.classList.toggle("is-old", sourceIsOld);
+
+  var showTime = currency && rate && !rate.manual && fetchedAt !== null;
+  ccRateTime.textContent = showTime ? tf("rateUpdatedAt", formatDateTime(fetchedAt)) : "";
+  ccRateTime.hidden = !showTime;
+
+  /* One short status line under the rate, whichever applies. It is for
+     whoever is holding the phone, so it says what to do about it. */
+  var usable = Boolean(currency && rate);
   var status = "";
-  if (rateLoading && !rate) {
+  var isError = false;
+
+  if (rateLoading && !usable) {
     status = t("loading");
-  } else if (rateFailed) {
+  } else if (!usable && rateFailed) {
+    /* Nothing saved and the download failed: no conversion is possible. */
     status = t("rateError");
-  } else if (currency && !rate && autoRates) {
+    isError = true;
+  } else if (!usable && !autoRates && !rateLoading) {
+    /* Never downloaded on this phone - offline on the very first run. */
+    status = t("noSavedRate");
+  } else if (!usable && currency && autoRates) {
     status = t("rateMissing");
-  } else if (rate && !rate.manual && ratesAreSaved) {
-    status = t("savedRate");
+  } else if (usable && !rate.manual && lastAttemptFailed) {
+    /* The saved rate is carrying on; only the update failed. */
+    status = t("rateUpdateFailed");
   } else if (!hasUsd) {
     status = t("enterAmount");
   }
 
   rateStatus.textContent = status;
   rateStatus.hidden = status === "";
-  rateStatus.classList.toggle("is-error", rateFailed);
+  rateStatus.classList.toggle("is-error", isError);
 
   /* The button is always there. After a failure it asks to try again;
      otherwise it offers a newer rate than the one on screen. */
@@ -577,22 +743,12 @@ function openCurrency() {
   viewCurrency.hidden = false;
   window.scrollTo(0, 0);
 
-  if (!hasLoadedOnce) {
-    hasLoadedOnce = true;
-
-    /* Show the saved rate straight away, then refresh it. */
-    var saved = loadSavedRates();
-    if (saved) {
-      autoRates = saved;
-      ratesAreSaved = true;
-    }
-  }
-
   suggestCurrency();
   render();
 
-  /* Every opening checks the age of the rate, not just the first one. */
-  refreshIfStale();
+  /* Nothing is downloaded if today's rates are already on the phone. The
+     usual day is one download in the morning and none after that. */
+  refreshIfNeeded();
 }
 
 function closeCurrency() {
@@ -647,19 +803,32 @@ useAutoBtn.addEventListener("click", function () {
 
 refreshBtn.addEventListener("click", fetchRates);
 
-/* Coming back to a phone that has been asleep, or to a tab left open all
-   shift, is the usual way a stale rate ends up in front of a customer. */
+/* Coming back to a phone that has been asleep is how a screen left open
+   overnight ends up showing yesterday's rate. Still nothing is downloaded
+   unless the day has actually turned over. */
 document.addEventListener("visibilitychange", function () {
   if (!document.hidden && !viewCurrency.hidden) {
-    refreshIfStale();
+    refreshIfNeeded();
+  }
+});
+
+/* A signal coming back is the moment to pick up today's rates, if the app
+   opened without them. */
+window.addEventListener("online", function () {
+  if (!viewCurrency.hidden) {
+    refreshIfNeeded();
   }
 });
 
 /* --------------------------------------------------------------------------
    Start up
-   Only the labels are drawn now. Nothing is fetched until the view is
-   opened, so the calculator never waits on the network.
+   The saved rates are read off the phone now - that is a local read, not a
+   download, so it costs nothing and works with no signal. Nothing is
+   fetched until the view is opened, and the calculator never waits on the
+   network for anything.
    -------------------------------------------------------------------------- */
+autoRates = loadSavedRates();
+
 buildLanguageButtons();
 applyLanguage();
 updateConvertButton();

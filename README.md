@@ -13,6 +13,13 @@ only the currency converter asks for a live exchange rate.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.11.0
+- The exchange rate is now downloaded once a day and kept on the phone, so the converter keeps working all day with no signal
+- Opening Currency Conversion no longer downloads anything if today's rate is already saved
+- The screen says where the rate came from: today's saved rate, a rate from an earlier day, or one you typed in
+- A rate from an earlier day still converts — it just shows which day it is from
+- If an update fails but a saved rate is there, the price still shows instead of an error
+
 ### Version 0.10.1
 - Fixed updates not reaching the phone at all: the app could keep opening an old copy no matter how many times it was closed and reopened
 - The app now asks for its files in a way no stored copy can answer, so opening it really does bring the newest version
@@ -24,11 +31,6 @@ source of truth. Update that list first, then copy it here.)*
 - Typing your own exchange rate and then switching currency no longer keeps the old number — it would have converted at the wrong rate
 - Added an Update Rate button that is always available, not only when the rate fails to load
 - The exchange rate is also refreshed on its own when it is more than half an hour old, or when you come back to a phone that has been asleep
-
-### Version 0.9.3
-- The currency now follows the language you pick, so choosing 日本語 no longer leaves the price in Mexican pesos
-- If you pick a currency from the list yourself, it is kept and the language never changes it
-- The Currency Conversion button always reads in the language currently chosen
 
 ---
 
@@ -153,26 +155,52 @@ function that normalises the response to `{ rates, updated }`:
 2. `https://api.frankfurter.dev/v1/latest?base=USD` — fallback, ECB data; it
    does not quote TWD, which then reports as unavailable rather than wrong.
 
-Each source gets `RATE_TIMEOUT_MS` (8s). The first that answers wins. A
-successful response is stamped with `fetchedAt` and saved to `localStorage`
-under `priceCheckRates`, so a reopen shows the last known rate immediately —
-labelled as saved — while a refresh runs. If every source fails and nothing is
-saved, the view shows the translated error; conversion is simply unavailable
-until a rate exists.
+Each source gets `RATE_TIMEOUT_MS` (8s). The first that answers wins.
 
-`ratesAreStale()` is true with no rate, with one restored from storage, or
-with one older than `RATE_MAX_AGE_MS` (30 min). `refreshIfStale()` runs it on
-every opening of the view and whenever the page becomes visible again while
-the view is open, which covers the screen being left open through a shift and
-a phone coming back from sleep. The refresh button is always on screen rather
-than only after a failure — a rate fetched an hour ago is still the rate on
-display until someone asks for a newer one — and it reads *Try Again* when the
-last attempt failed.
+### The daily rate cache
+
+The converter is used on a shop floor where the signal comes and goes, so
+it is built around one download a day rather than a live feed. A successful
+response is stamped with `fetchedAt` (ms), `fetchedDay` (`"2026-11-01"`) and
+`fetchedTime` (`"08:15"`), then saved to `localStorage` under
+`priceCheckRates`. `loadSavedRates()` runs at startup, not on first opening
+of the view: it is a local read, so the rates are in hand before anything is
+asked of the network, and a phone with no signal all day converts exactly as
+well as one with five bars.
+
+The day is recorded in the phone's own calendar rather than UTC, and
+`ratesAreFromToday()` compares against the phone's day now. Rates downloaded
+at 8am in Las Vegas are still today's at 6pm, though it has been tomorrow in
+London since mid-afternoon. `fetchedDay` is preferred over recomputing from
+`fetchedAt`, because the day written down at the time is the honest answer.
+
+`refreshIfNeeded()` downloads only when there is no rate from today, and
+skips the attempt entirely when `navigator.onLine` is false. It runs on each
+opening of the view, when the page becomes visible again with the view open,
+and on the `online` event. So the usual day is one download in the morning
+and none after it. `navigator.onLine` is never allowed to block a deliberate
+press of *Update Rate*: it is wrong often enough — hotel wifi, a sign-in page
+— that it may only skip work nobody asked for.
+
+Failure is split in two. `lastAttemptFailed` means the download came back
+with nothing; `rateFailed` means that *and* nothing was saved to fall back
+on. Only the second is an error: with a saved rate the price still shows,
+and the status line says the update did not go through. The refresh button
+is always on screen and reads *Try Again* after a hard failure.
 
 A positive number typed into the manual field takes precedence over the
 automatic rate for as long as it is there; *Use Automatic Rate* clears it, and
 so does changing currency: a rate is typed for one currency, and carrying 150
 from yen into euros would have quietly converted at 1 USD = 150 EUR.
+
+So the order of preference is: a hand-typed rate, then the saved rates
+(today's or an earlier day's — only one set is ever kept), then a download if
+nothing is saved and there is a signal. Converting never waits on the
+network; `activeRate()` reads what is already in memory, and the figures are
+redrawn as the amount is typed. Under the converted price two small lines say
+which of those is in use — *Today's saved rate*, *Using exchange rate from
+Oct 31, 2026* (amber), *Manual rate in use* — and when it was downloaded. A
+rate from an earlier day is never blocked; it is only labelled.
 
 ### Out-of-date results
 
