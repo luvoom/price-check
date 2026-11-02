@@ -13,6 +13,13 @@ only the currency converter asks for a live exchange rate.
 *(Mirrors `VERSION_HISTORY` at the top of `script.js`, which is the single
 source of truth. Update that list first, then copy it here.)*
 
+### Version 0.12.0
+- Press Calculate Total and the customer's own currency now appears directly under the dollar total — no need to open another screen
+- Added a Get Today's Rate button at the top: press it once before a shift and the price converts all day with no signal
+- The button says when the rate was last fetched, and turns amber when it is not from today
+- Added a currency menu on the main screen, next to the language
+- Language and currency carry straight through to the Currency Conversion screen and back — one setting, two screens
+
 ### Version 0.11.0
 - The exchange rate is now downloaded once a day and kept on the phone, so the converter keeps working all day with no signal
 - Opening Currency Conversion no longer downloads anything if today's rate is already saved
@@ -24,13 +31,6 @@ source of truth. Update that list first, then copy it here.)*
 - Fixed updates not reaching the phone at all: the app could keep opening an old copy no matter how many times it was closed and reopened
 - The app now asks for its files in a way no stored copy can answer, so opening it really does bring the newest version
 - If one file cannot be downloaded, the update no longer stops — the rest still comes through
-
-### Version 0.10.0
-- Changing a price, quantity, discount or the tax now marks the results as out of date, so an old total is never shown as if it were current
-- While they are out of date the Currency Conversion screen no longer fills in that old total
-- Typing your own exchange rate and then switching currency no longer keeps the old number — it would have converted at the wrong rate
-- Added an Update Rate button that is always available, not only when the rate fails to load
-- The exchange rate is also refreshed on its own when it is more than half an hour old, or when you come back to a phone that has been asleep
 
 ---
 
@@ -202,6 +202,50 @@ which of those is in use — *Today's saved rate*, *Using exchange rate from
 Oct 31, 2026* (amber), *Manual rate in use* — and when it was downloaded. A
 rate from an earlier day is never blocked; it is only labelled.
 
+### The converted total on the main screen
+
+The converter screen is for holding up to a customer; most of the time the
+question is simply *what is this in their money*, and crossing to another
+screen to answer it is a step too many. So `#converted` sits directly under
+the Final Total and shows the same number in the chosen currency, as big a
+figure as the dollars above it.
+
+It is drawn by currency.js, because that is where the rates and the
+formatting live. `renderResults()` hands the total over with
+`setCurrencyTotal(r.finalTotal)`, and `reset()` clears it with `null`; both
+calls are behind `typeof setCurrencyTotal === "function"`, so the calculator
+still works if currency.js fails to load at all. currency.js redraws the
+block from its own `render()` too, which covers a change of currency, rate or
+language without recalculating anything.
+
+The block is simply left out when there is no total, no currency or no rate —
+no placeholder, no apology. What to do about a missing rate is said once, at
+the top of the screen, to the person holding the phone.
+
+`chosenCurrency` is the single currency setting behind two menus, `#mainCurrency`
+on the calculator and `#currencySelect` on the converter. `chooseCurrency()`
+is the only thing that writes it, and `applyLanguage()` fills both menus from
+it, so they cannot drift apart. `suggestCurrency()` still writes it too,
+which is how a language carries its currency with it.
+
+### The rate bar
+
+`#rateBar` sits above the title: one button and one line of text, in English
+like every other control the employee works. *Get Today's Rate* becomes
+*Update Rate* once today's rate is in, and *Try Again* after a failure; the
+line beside it reads *Today's rate · saved 8:15 AM*, *Rate is from Oct 31 —
+tap to update* (amber) or a failure. When a failed update meets a rate from
+an earlier day, the wording keeps the day rather than replacing it with a
+generic failure: the day is the part worth acting on.
+
+The button calls `fetchRates()` directly, never `refreshIfNeeded()`. It
+ignores `navigator.onLine` and ignores today's rate already being saved,
+because someone pressed it on purpose.
+
+`refreshIfNeeded()` also runs once at start-up, so the usual morning is a
+single download nobody had to ask for and the converted total is ready the
+first time Calculate Total is pressed. Nothing waits on it.
+
 ### Out-of-date results
 
 Nothing recalculates as you type, so after an edit the figures on screen
@@ -241,7 +285,10 @@ the converter are two ways into the same setting.
 `#langRow` sits directly under the title rather than inside `#results`,
 because `#results` carries `hidden` until a calculation has been made: in the
 results card the menu could not be found, or used, until Calculate Total had
-been pressed.
+been pressed. It holds the currency menu beside the language one, each with
+its label above rather than beside it — the labels are translated, so their
+widths vary too much for anything to line up across fifteen languages, and
+stacking leaves the menu the full width for entries as long as `JPY — 日本円`.
 
 A language change leaves the amount and the rate alone. The currency depends
 on where it came from: `currencyChosenByHand` is set when the picker is used,

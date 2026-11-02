@@ -89,6 +89,15 @@ var RATE_STORE_KEY = "priceCheckRates";
    a new language is free to replace it. */
 var currencyChosenByHand = false;
 
+/* The currency being converted to, as a code ("JPY") or "" for none. One
+   setting behind two menus - the one on the main screen and the one on the
+   converter - so changing either changes both. */
+var chosenCurrency = "";
+
+/* The last Final Total, kept so the line under it can be redrawn when the
+   language, the currency or the rate changes without recalculating. */
+var mainTotal = null;
+
 /* The one set of rates in hand, whether it was downloaded a minute ago or
    read back off the phone this morning:
    { rates: {...}, updated: "...", fetchedAt: 1762..., fetchedDay: "2026-11-01" } */
@@ -117,6 +126,15 @@ var backBtn = document.getElementById("backBtn");
 var langGrid = document.getElementById("langGrid");
 var usdAmountInput = document.getElementById("usdAmount");
 var currencySelect = document.getElementById("currencySelect");
+
+/* On the main Price Check screen */
+var mainCurrencySelect = document.getElementById("mainCurrency");
+var getRateBtn = document.getElementById("getRateBtn");
+var rateBarNote = document.getElementById("rateBarNote");
+var converted = document.getElementById("converted");
+var convertedLabel = document.getElementById("convertedLabel");
+var convertedValue = document.getElementById("convertedValue");
+var convertedNote = document.getElementById("convertedNote");
 
 var ccUsd = document.getElementById("ccUsd");
 var ccPrice = document.getElementById("ccPrice");
@@ -281,6 +299,26 @@ function formatDay(ms) {
   }
 }
 
+/* "8:15 AM" and "Oct 31" for the bar at the top of the main screen, which
+   is in English whatever language the customer is reading. */
+function formatClock(ms) {
+  var when = new Date(ms);
+  try {
+    return when.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  } catch (error) {
+    return pad2(when.getHours()) + ":" + pad2(when.getMinutes());
+  }
+}
+
+function formatDayPlain(ms) {
+  var when = new Date(ms);
+  try {
+    return when.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  } catch (error) {
+    return when.toDateString();
+  }
+}
+
 /* "Sat, 31 Oct 2026 00:02:31 +0000" or "2026-10-30" -> a short local date.
    Only used for rates saved by an older version of the app, which recorded
    the day the rate was quoted for but not when it was downloaded. */
@@ -305,20 +343,24 @@ function formatUpdated(text) {
 
 /* The currency's own name in the customer's language where the browser
    knows it ("Japanese Yen" -> "日本円"), otherwise the English name. */
-function currencyLabel(currency) {
-  var name = currency.name;
+function currencyName(currency) {
   try {
     if (typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function") {
       var names = new Intl.DisplayNames([currentLocale()], { type: "currency" });
       var translated = names.of(currency.code);
       if (translated && translated !== currency.code) {
-        name = translated;
+        return translated;
       }
     }
   } catch (error) {
     /* Older browser: the English name is perfectly readable. */
   }
-  return currency.code + " — " + name;
+  return currency.name;
+}
+
+/* The same with its code in front, for the menus: "JPY — 日本円". */
+function currencyLabel(currency) {
+  return currency.code + " — " + currencyName(currency);
 }
 
 /* --------------------------------------------------------------------------
@@ -567,23 +609,70 @@ function applyLanguage() {
     buttons[j].setAttribute("aria-pressed", isOn ? "true" : "false");
   }
 
-  /* The picker is rebuilt because the currency names are translated too. */
-  var chosen = currencySelect.value;
-  currencySelect.textContent = "";
+  /* Both menus are rebuilt because the currency names are translated too,
+     and both are set from the one chosen currency so they cannot drift
+     apart. */
+  fillCurrencySelect(currencySelect);
+  fillCurrencySelect(mainCurrencySelect);
+}
+
+function fillCurrencySelect(select) {
+  if (!select) {
+    return;
+  }
+  select.textContent = "";
 
   var prompt = document.createElement("option");
   prompt.value = "";
   prompt.textContent = t("selectPrompt");
-  currencySelect.appendChild(prompt);
+  select.appendChild(prompt);
 
   for (var k = 0; k < CURRENCIES.length; k++) {
     var option = document.createElement("option");
     option.value = CURRENCIES[k].code;
     option.textContent = currencyLabel(CURRENCIES[k]);
-    currencySelect.appendChild(option);
+    select.appendChild(option);
   }
 
-  currencySelect.value = chosen;
+  select.value = chosenCurrency;
+}
+
+/* Picking from either menu. Choosing a currency is a decision; going back
+   to the blank entry is not, so the language is free to suggest again. */
+function chooseCurrency(code) {
+  currencyChosenByHand = code !== "";
+  chosenCurrency = code;
+
+  /* A rate typed in by hand belongs to the currency it was typed for.
+     Carrying 150 from yen over to euros would quietly convert at
+     1 USD = 150 EUR, so it is cleared and the automatic rate takes over. */
+  manualRateInput.value = "";
+
+  render();
+}
+
+/* Which rate is being used, said in the customer's language. */
+function rateSourcePhrase(rate) {
+  if (!rate) {
+    return "";
+  }
+  if (rate.manual) {
+    return t("manualInUse");
+  }
+  if (ratesAreFromToday()) {
+    return t("savedRateToday");
+  }
+  var when = ratesFetchedAt();
+  if (when !== null) {
+    return tf("oldRate", formatDay(when));
+  }
+  return t("savedRate");
+}
+
+/* True when the rate on screen is from a day before today - worth saying
+   out loud, never worth blocking the conversion over. */
+function rateIsFromAnEarlierDay(rate) {
+  return Boolean(rate) && !rate.manual && !ratesAreFromToday() && ratesFetchedAt() !== null;
 }
 
 /* Keeps the big number readable however long it is. */
@@ -601,7 +690,7 @@ function render() {
 
   var usd = toNumber(usdAmountInput.value);
   var hasUsd = !isNaN(usd) && usd >= 0;
-  var code = currencySelect.value;
+  var code = chosenCurrency;
   var currency = findCurrency(code);
 
   /* The USD line above the big number. */
@@ -622,7 +711,6 @@ function render() {
   }
 
   var fetchedAt = ratesFetchedAt();
-  var fromToday = ratesAreFromToday();
 
   /* The rate rows. */
   if (currency && rate) {
@@ -641,21 +729,8 @@ function render() {
 
   /* Where the number being shown to the customer came from, in their own
      language and kept small: it belongs under the price, not beside it. */
-  var source = "";
-  var sourceIsOld = false;
-  if (currency && rate) {
-    if (rate.manual) {
-      source = t("manualInUse");
-    } else if (fromToday) {
-      source = t("savedRateToday");
-    } else if (fetchedAt !== null) {
-      /* Still perfectly usable - just worth saying out loud how old it is. */
-      source = tf("oldRate", formatDay(fetchedAt));
-      sourceIsOld = true;
-    } else {
-      source = t("savedRate");
-    }
-  }
+  var source = currency && rate ? rateSourcePhrase(rate) : "";
+  var sourceIsOld = currency ? rateIsFromAnEarlierDay(rate) : false;
 
   ccSource.textContent = source;
   ccSource.hidden = source === "";
@@ -700,14 +775,115 @@ function render() {
 
   /* The big customer-facing number. */
   if (currency && rate && hasUsd) {
-    var converted = usd * rate.rate;
-    var text = formatCurrency(converted, currency);
+    var amount = usd * rate.rate;
+    var text = formatCurrency(amount, currency);
     ccPrice.textContent = text;
     sizePrice(text);
   } else {
     ccPrice.textContent = "—";
     sizePrice("—");
   }
+
+  /* The main screen carries the same rate, so it is redrawn with it. */
+  renderCurrencyTotal();
+  renderRateBar();
+}
+
+/* --------------------------------------------------------------------------
+   The main Price Check screen
+   The Final Total again in the customer's currency, directly under the
+   dollars. It reads the rate already on the phone - pressing Calculate
+   Total never waits on the network, and never asks for a rate.
+   -------------------------------------------------------------------------- */
+
+/* Called by script.js with each new Final Total, and with null when there
+   is nothing to show. */
+function setCurrencyTotal(total) {
+  mainTotal = typeof total === "number" && !isNaN(total) ? total : null;
+  renderCurrencyTotal();
+}
+
+function renderCurrencyTotal() {
+  if (!converted) {
+    return;
+  }
+
+  var currency = findCurrency(chosenCurrency);
+  var rate = currency ? activeRate(chosenCurrency) : null;
+
+  /* No currency picked, no rate yet, or nothing calculated: the line is
+     simply not there. The bar at the top of the screen is what says a rate
+     needs fetching, and it says it to the employee, in English. */
+  if (mainTotal === null || !currency || !rate) {
+    converted.hidden = true;
+    return;
+  }
+
+  converted.hidden = false;
+  convertedLabel.textContent = currencyName(currency);
+
+  var text = formatCurrency(mainTotal * rate.rate, currency);
+  convertedValue.textContent = text;
+
+  /* Long amounts - 2.580.200 ₫ - would otherwise run off a narrow screen. */
+  convertedValue.classList.toggle("is-long", text.length > 9);
+  convertedValue.classList.toggle("is-xlong", text.length > 12);
+
+  convertedNote.textContent =
+    rateSourcePhrase(rate) + " · 1 USD = " + formatRate(rate.rate) + " " + currency.code;
+  convertedNote.classList.toggle("is-old", rateIsFromAnEarlierDay(rate));
+}
+
+/* --------------------------------------------------------------------------
+   The rate bar at the top of the main screen
+   Written in English: it is for whoever is holding the phone, like every
+   other control on that screen. Pressing the button always fetches, even
+   when today's rate is already saved and even when the phone believes it
+   is offline.
+   -------------------------------------------------------------------------- */
+function renderRateBar() {
+  if (!getRateBtn) {
+    return;
+  }
+
+  var when = ratesFetchedAt();
+  var label = "Get Today's Rate";
+  var note = "No rate saved yet";
+  var tone = "";
+
+  if (rateLoading) {
+    note = "Getting today's rate…";
+  } else if (autoRates && ratesAreFromToday()) {
+    label = "Update Rate";
+    note = when === null
+      ? "Today's rate saved"
+      : "Today's rate · saved " + formatClock(when);
+  } else if (autoRates && when !== null) {
+    note = "Rate is from " + formatDayPlain(when) + " — tap to update";
+    tone = "is-old";
+  } else if (autoRates) {
+    note = "A saved rate is in use";
+  }
+
+  /* A failed attempt replaces the wording, but never loses the day the
+     rate on the phone is from - that is the part worth acting on. */
+  if (lastAttemptFailed) {
+    label = "Try Again";
+    tone = "is-old";
+    if (!autoRates) {
+      note = "Could not get the rate — check the connection";
+      tone = "is-error";
+    } else if (when !== null && !ratesAreFromToday()) {
+      note = "Rate is from " + formatDayPlain(when) + " — could not update";
+    } else {
+      note = "Could not update — the saved rate is still in use";
+    }
+  }
+
+  getRateBtn.textContent = label;
+  getRateBtn.disabled = rateLoading;
+  rateBarNote.textContent = note;
+  rateBarNote.className = "rate-bar-note" + (tone ? " " + tone : "");
 }
 
 /* Points the currency picker at the one a speaker of the chosen language
@@ -723,7 +899,7 @@ function suggestCurrency() {
   }
   var suggested = languageInfo(appLanguage).currency;
   if (suggested && findCurrency(suggested)) {
-    currencySelect.value = suggested;
+    chosenCurrency = suggested;
   }
 }
 
@@ -781,18 +957,23 @@ onLanguageChange(function () {
   render();
 });
 
+/* Two menus, one setting: either one changes the currency everywhere. */
 currencySelect.addEventListener("change", function () {
-  /* Picking from the list is a decision; going back to the blank entry is
-     not, so the suggestion takes over again. */
-  currencyChosenByHand = currencySelect.value !== "";
-
-  /* A rate typed in by hand belongs to the currency it was typed for.
-     Carrying 150 from yen over to euros would quietly convert at
-     1 USD = 150 EUR, so it is cleared and the automatic rate takes over. */
-  manualRateInput.value = "";
-
-  render();
+  chooseCurrency(currencySelect.value);
 });
+
+if (mainCurrencySelect) {
+  mainCurrencySelect.addEventListener("change", function () {
+    chooseCurrency(mainCurrencySelect.value);
+  });
+}
+
+/* Always fetches, whatever the phone thinks of its connection and whether
+   or not today's rate is already here. Somebody pressed it on purpose. */
+if (getRateBtn) {
+  getRateBtn.addEventListener("click", fetchRates);
+}
+
 usdAmountInput.addEventListener("input", render);
 manualRateInput.addEventListener("input", render);
 
@@ -807,18 +988,14 @@ refreshBtn.addEventListener("click", fetchRates);
    overnight ends up showing yesterday's rate. Still nothing is downloaded
    unless the day has actually turned over. */
 document.addEventListener("visibilitychange", function () {
-  if (!document.hidden && !viewCurrency.hidden) {
+  if (!document.hidden) {
     refreshIfNeeded();
   }
 });
 
 /* A signal coming back is the moment to pick up today's rates, if the app
    opened without them. */
-window.addEventListener("online", function () {
-  if (!viewCurrency.hidden) {
-    refreshIfNeeded();
-  }
-});
+window.addEventListener("online", refreshIfNeeded);
 
 /* --------------------------------------------------------------------------
    Start up
@@ -832,3 +1009,10 @@ autoRates = loadSavedRates();
 buildLanguageButtons();
 applyLanguage();
 updateConvertButton();
+renderRateBar();
+
+/* If today's rate is not here yet and there is a signal, it is fetched in
+   the background now, so the converted total is ready the first time
+   Calculate Total is pressed. Nothing waits on it: the calculator works
+   exactly the same whether it succeeds, fails or never finishes. */
+refreshIfNeeded();

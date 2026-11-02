@@ -313,6 +313,114 @@ body {
   white-space: nowrap;
 }
 
+/* --- The total again in the customer's currency --------------------------- */
+
+/* Sits directly under the dollars and is deliberately almost as loud: this
+   is the number the customer is being shown. It keeps the navy of the
+   total above it rather than competing with a second colour. */
+
+.converted {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.converted-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.converted-value {
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 700;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.converted-value.is-long {
+  font-size: 36px;
+}
+
+.converted-value.is-xlong {
+  font-size: 28px;
+}
+
+.converted-note {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--gray-text);
+}
+
+.converted-note.is-old {
+  color: #8a5a12;
+  font-weight: 600;
+}
+
+/* --- Today's rate, at the top of the main screen -------------------------- */
+
+/* For whoever is holding the phone, not the customer, so it is quiet and
+   stays in English like the other controls. One press before a shift and
+   the converter works all day with no signal. */
+
+.rate-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.btn-rate {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--navy);
+  border-radius: 8px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn-rate:disabled {
+  opacity: 0.55;
+}
+
+.rate-bar-note {
+  flex: 1 1 140px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--gray-text);
+}
+
+.rate-bar-note.is-old {
+  color: #8a5a12;
+  font-weight: 600;
+}
+
+.rate-bar-note.is-error {
+  color: #9b2c2c;
+  font-weight: 600;
+}
+
 /* --- Out-of-date results -------------------------------------------------- */
 
 .stale-note {
@@ -693,13 +801,24 @@ body {
    Currency Conversion screen at the same time. */
 .lang-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 16px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+}
+
+/* Label above its menu rather than beside it: the labels are translated,
+   so their widths vary wildly and nothing would line up across languages.
+   It also leaves the menu the full width, which matters for entries as
+   long as "JPY — 日本円". */
+.lang-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
 }
 
 .lang-row-label {

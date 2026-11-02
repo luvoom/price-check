@@ -36,14 +36,30 @@
         <div class="vh-body" id="versionBody"></div>
       </details>
 
+      <!-- Today's exchange rate. Pressed once before a shift while there is
+           a signal; after that the rate lives on the phone and nothing here
+           needs the internet again. This bar is for whoever is holding the
+           phone, so it stays in English like the rest of the controls. -->
+      <div class="rate-bar" id="rateBar">
+        <button type="button" class="btn-rate" id="getRateBtn">Get Today's Rate</button>
+        <span class="rate-bar-note" id="rateBarNote">—</span>
+      </div>
+
       <h1 class="title">Price Check</h1>
 
-      <!-- Language for everything shown to the customer: the results below
-           and the Currency Conversion screen. Kept up here so it is there
-           before anything is calculated, not buried in the results. -->
+      <!-- Language and currency for everything shown to the customer: the
+           results below and the Currency Conversion screen. Kept up here so
+           both are there before anything is calculated, not buried in the
+           results. -->
       <div class="lang-row" id="langRow">
-        <label class="lang-row-label" for="resultLanguage" data-i18n="language">Language</label>
-        <select id="resultLanguage" class="lang-select"></select>
+        <div class="lang-field">
+          <label class="lang-row-label" for="resultLanguage" data-i18n="language">Language</label>
+          <select id="resultLanguage" class="lang-select"></select>
+        </div>
+        <div class="lang-field">
+          <label class="lang-row-label" for="mainCurrency" data-i18n="selectCurrency">Select Currency</label>
+          <select id="mainCurrency" class="lang-select"></select>
+        </div>
       </div>
 
       <!-- Items -->
@@ -164,6 +180,16 @@
         <div class="result-total">
           <span class="total-label" data-i18n="finalTotal">Final Total</span>
           <span class="total-value" id="rTotal">$0.00</span>
+        </div>
+
+        <!-- The same total in the customer's own currency, directly under
+             the dollars. Written by currency.js from the rate saved on the
+             phone - it needs no connection, and it is simply left out when
+             no currency has been chosen or no rate is in hand. -->
+        <div class="converted" id="converted" hidden>
+          <span class="converted-label" id="convertedLabel">—</span>
+          <span class="converted-value" id="convertedValue">—</span>
+          <span class="converted-note" id="convertedNote"></span>
         </div>
 
         <p class="saved-today" id="rSavedToday" hidden>You saved $0.00 today</p>

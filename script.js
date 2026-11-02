@@ -11,6 +11,16 @@
    -------------------------------------------------------------------------- */
 var VERSION_HISTORY = [
   {
+    version: "0.12.0",
+    changes: [
+      "Press Calculate Total and the customer's own currency now appears directly under the dollar total — no need to open another screen",
+      "Added a Get Today's Rate button at the top: press it once before a shift and the price converts all day with no signal",
+      "The button says when the rate was last fetched, and turns amber when it is not from today",
+      "Added a currency menu on the main screen, next to the language",
+      "Language and currency carry straight through to the Currency Conversion screen and back — one setting, two screens"
+    ]
+  },
+  {
     version: "0.11.0",
     changes: [
       "The exchange rate is now downloaded once a day and kept on the phone, so the converter keeps working all day with no signal",
@@ -27,17 +37,7 @@ var VERSION_HISTORY = [
       "The app now asks for its files in a way no stored copy can answer, so opening it really does bring the newest version",
       "If one file cannot be downloaded, the update no longer stops — the rest still comes through"
     ]
-  },
-  {
-    version: "0.10.0",
-    changes: [
-      "Changing a price, quantity, discount or the tax now marks the results as out of date, so an old total is never shown as if it were current",
-      "While they are out of date the Currency Conversion screen no longer fills in that old total",
-      "Typing your own exchange rate and then switching currency no longer keeps the old number — it would have converted at the wrong rate",
-      "Added an Update Rate button that is always available, not only when the rate fails to load",
-      "The exchange rate is also refreshed on its own when it is more than half an hour old, or when you come back to a phone that has been asleep"
-    ]
-  },
+  }
 ];
 
 /* Default sales tax rate, used on load and after Reset. */
@@ -606,6 +606,15 @@ function renderResults() {
   rTax.textContent = formatMoney(r.salesTax);
   rTotal.textContent = formatMoney(r.finalTotal);
 
+  /* The same total again in the customer's currency, directly underneath.
+     currency.js draws it from the rate already saved on the phone; if it
+     has nothing to draw it simply leaves the line out. The guard is here
+     because the calculator must keep working even if currency.js has not
+     loaded at all. */
+  if (typeof setCurrencyTotal === "function") {
+    setCurrencyTotal(r.finalTotal);
+  }
+
   /* The same steps written out in words, so anyone can check the numbers
      by hand. The sums stay in digits; only the labels change language. */
   mathSteps.textContent = "";
@@ -694,6 +703,9 @@ function reset() {
   lastResult = null;
   markResultsCurrent();
   window.PriceCheck.finalTotal = null;
+  if (typeof setCurrencyTotal === "function") {
+    setCurrencyTotal(null);
+  }
 }
 
 /* --------------------------------------------------------------------------
