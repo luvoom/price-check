@@ -39,7 +39,7 @@ const PICK={CN:"请选择商品",KR:"상품을 선택하세요",JP:"商品を選
 const FLAG={CN:"🇨🇳",KR:"🇰🇷",JP:"🇯🇵",US:"🇺🇸"};
 const HL={CN:"#c4303f",KR:"#2b5eae",JP:"#b0386c",EN:"#c4303f"};
 const DOT={ok:"var(--ok)",ref:"var(--ref)",nf:"var(--warn)"};
-const APP_VERSION="2026.11.03";
+const APP_VERSION="2026.11.03b";
 
 // ---------- storage helpers (never throw)
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -197,9 +197,9 @@ function bind(){
 // ---------- start
 async function start(){
  bind();setNet();
- try{DATA=await (await fetch("data/items.json")).json()}catch(e){$("result").innerHTML='<p class="small">商品データを読み込めませんでした。一度ネットにつないで開き直してください。</p>';return}
+ try{DATA=await (await fetch("data/items.json?t="+Date.now(),{cache:"no-store"})).json()}catch(e){$("result").innerHTML='<p class="small">商品データを読み込めませんでした。一度ネットにつないで開き直してください。</p>';return}
  ITEMS=DATA.items;SPECS=DATA.specs;NOTES=DATA.notes;
- try{const b=await (await fetch("data/barcodes.json")).json();for(const[k,v]of Object.entries(b.codes||{}))BC[norm(k)]=v}catch(e){}
+ try{const b=await (await fetch("data/barcodes.json?t="+Date.now(),{cache:"no-store"})).json();for(const[k,v]of Object.entries(b.codes||{}))BC[norm(k)]=v}catch(e){}
  Object.assign(BC,ls.get("pg-bc",{}));
  sel=ITEMS[0]&&ITEMS[0].id;
  paint();
