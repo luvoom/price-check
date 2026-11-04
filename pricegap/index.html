@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Price Gap</title>
+<meta name="theme-color" content="#14213d">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Price Gap">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&display=swap">
+<style>
+/* Layout: one navy phone column — small photo beside the name, then the two prices and the gap, all on the first screen */
+:root{
+  --bg:#14213d; --card:#1c2b4d; --ink:#ffffff; --mute:#c3cbdc; --line:#344670; --accent:#e9d19e; --navy:#ffffff;
+  --ok:#2f7d55; --ref:#3d5f9e; --warn:#a26c12; --hl:#c4303f;
+  --latin:"Jost","Helvetica Neue",Arial,sans-serif;
+  --body:"Jost",-apple-system,"Hiragino Sans","PingFang SC","Apple SD Gothic Neo","Noto Sans CJK",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:400;font-size:17px;line-height:1.55}
+.wrap{max-width:440px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 40px;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:baseline}
+.brand{font-family:var(--latin);font-weight:400;letter-spacing:.32em;font-size:14px;text-transform:uppercase}
+.demo{font-family:var(--latin);font-size:10px;letter-spacing:.2em;color:var(--mute)}
+.seg{display:flex;justify-content:space-between;border-bottom:1px solid var(--line)}
+.seg button{all:unset;cursor:pointer;flex:1;text-align:center;padding:10px 2px 12px;font-size:15.5px;white-space:nowrap;color:var(--mute);border-bottom:1.5px solid transparent;margin-bottom:-1px}
+.seg button[aria-pressed="true"]{color:#fff;background:var(--hl);border-color:var(--hl);border-radius:8px 8px 0 0;font-weight:500}
+.row{display:flex;gap:10px;align-items:stretch}
+.btn{all:unset;cursor:pointer;flex:1;text-align:center;border:1px solid var(--ink);color:var(--ink);padding:14px;font-size:16px;letter-spacing:.1em}
+.btn:hover{background:var(--ink);color:var(--bg)}
+select,input[type=number]{font:inherit;font-weight:300;color:var(--ink);background:transparent;border:1px solid var(--line);padding:9px 10px;border-radius:0}
+:focus-visible{outline:1px solid var(--accent);outline-offset:3px}
+.picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.item{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.35;color:var(--mute)}
+.item img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;background:var(--line)}
+.card{--ink:#1f2329;--mute:#565c67;--line:#d2d5da;--navy:#14213d;background:#eef0f2;color:var(--ink);border-radius:4px;overflow:hidden}
+.head{display:grid;grid-template-columns:38% 1fr;gap:16px;align-items:center;padding:16px 18px 0}.photo{width:100%;aspect-ratio:4/5;object-fit:cover;object-position:top;display:block;background:var(--line)}
+.prod{padding:0;min-width:0}
+.eyebrow{font-family:var(--latin);font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
+.prod h2{word-break:keep-all;overflow-wrap:anywhere;font-weight:400;font-size:21px;line-height:1.35;margin:4px 0 6px;text-wrap:balance;letter-spacing:.01em}
+.status{font-size:16px;color:var(--mute);display:flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.prices{display:grid;grid-template-columns:1fr 1fr;margin:14px 18px 0;border-top:1px solid var(--line)}
+.prices>div{padding:14px 0 12px;min-width:0}.prices>div:first-child{padding-left:12px;padding-right:10px;background:color-mix(in srgb,var(--hl) 13%,transparent)}.amt.home{color:var(--hl)}
+.prices>div+div{padding-left:16px;border-left:1px solid var(--line)}
+.lab{font-family:var(--latin);font-size:14px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+.amt{font-family:var(--latin);font-weight:400;font-size:clamp(30px,9vw,38px);line-height:1.2;margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.amt.us{color:var(--navy)}
+.small{font-size:14.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.gap{margin:0 18px;border-top:1px solid var(--line);padding:20px 0;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.gap .k{font-size:16px;color:var(--mute)}
+.gap .v{font-family:var(--latin);font-weight:400;font-size:60px;line-height:1;color:var(--hl);font-variant-numeric:tabular-nums}
+.gap .v small{font-size:26px}
+.gap .r{text-align:right}
+.gap .r .v{font-size:38px;color:var(--ink)}
+.none{margin:14px 18px 0;border-top:1px solid var(--line);padding:18px 0;color:var(--mute);font-size:17px}
+table{color:inherit;font-size:inherit;width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tbl{margin:0 18px;border-top:1px solid var(--line);padding-top:6px}
+td{padding:9px 0;font-size:17px}.spec{margin:6px 18px 0;border-top:1px solid var(--line);padding-top:12px}.spec .sec{font-size:14px;letter-spacing:.06em;color:var(--mute);margin-bottom:6px}.spec dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:16px}.spec dt{color:var(--mute)}.spec dd{margin:0;min-width:0}
+.size{margin:6px 18px 0;border-top:1px solid var(--line);padding-top:12px}.size .sec,.rev .sec{font-size:14px;letter-spacing:.06em;color:var(--mute);margin-bottom:6px}
+.size th{font-size:14px;font-weight:400;color:var(--mute);text-align:left;padding:4px 10px}.size th.n{text-align:right}.size td{padding:8px 10px}.size .c{color:var(--mute);font-size:15px}
+.size tr.hit td{background:color-mix(in srgb,var(--hl) 12%,transparent)}
+.rev{margin-top:14px}.rv{display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;align-items:baseline;font-size:17px;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--hl) 8%,transparent);margin-bottom:6px}.rv .c{grid-column:1/-1;font-size:15px;color:var(--mute)}.rv b{font-size:20px;color:var(--hl)}.rv .arrow{color:var(--mute)}
+.demo-n{font-size:13px;color:var(--mute);margin-top:6px}
+td.n{text-align:right;white-space:nowrap;padding-left:10px}
+td.c{color:var(--mute)}
+tr.me td{color:var(--ink);font-weight:500;background:color-mix(in srgb,var(--hl) 14%,transparent)}tr.us td{background:color-mix(in srgb,var(--navy) 7%,transparent)}td:first-child{padding-left:10px}td:last-child{padding-right:10px}
+.notes{font-size:15px;color:var(--mute);padding:12px 18px 18px;line-height:1.6}
+details{border-top:1px solid var(--line);padding-top:4px}
+summary{cursor:pointer;padding:10px 0;font-size:16px;color:var(--mute);letter-spacing:.04em}
+.f{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding-bottom:12px;font-size:16px}
+.f input[type=number]{width:110px;text-align:right}
+@media (prefers-reduced-motion:no-preference){.card{animation:in .3s ease-out}@keyframes in{from{opacity:.4}to{opacity:1}}}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.tabs button{all:unset;cursor:pointer;font-size:14px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--mute)}
+.tabs button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink)}
+.item .pr{font-family:var(--latin);font-variant-numeric:tabular-nums;color:var(--ink);font-size:13px}
+.item .x{font-size:12px;color:var(--accent)}
+.tag{font-size:12.5px;color:var(--mute);margin-left:6px;white-space:nowrap}
+.flagnote{margin:10px 18px 0;padding:10px 12px;border-radius:6px;background:color-mix(in srgb,var(--hl) 9%,transparent);font-size:15.5px;line-height:1.5}
+.tipfoot{font-size:13px;color:var(--mute);margin-top:4px}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
+body{margin:0;-webkit-text-size-adjust:100%}
+img{max-width:100%}
+[hidden]{display:none!important}
+.scan{position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.scan video{flex:1;width:100%;object-fit:cover;min-height:0}
+.scan .frame{position:absolute;left:10%;right:10%;top:38%;height:22%;border:2px solid rgba(255,255,255,.85);border-radius:10px;pointer-events:none}
+.scan .bar{display:flex;gap:10px;padding:12px max(16px,env(safe-area-inset-left,0px));background:#14213d;align-items:center;flex-wrap:wrap}
+.scan .bar input{flex:1;min-width:0;font:inherit;color:#fff;background:transparent;border:1px solid #344670;padding:10px}
+.scan .bar button,.mini{all:unset;cursor:pointer;border:1px solid #fff;color:#fff;padding:10px 14px;font-size:15px}
+.scan .msg{color:#c3cbdc;font-size:14px;padding:0 max(16px,env(safe-area-inset-left,0px)) 10px;background:#14213d}
+.assign{border:1px solid var(--accent);padding:12px;display:grid;gap:8px;font-size:15px}
+.assign b{font-family:var(--latin);letter-spacing:.05em}
+.staffbtns{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.staffbtns .mini{border-color:var(--line);color:var(--ink);font-size:14px;padding:8px 12px}
+textarea{width:100%;min-height:90px;font:13px ui-monospace,monospace;color:var(--ink);background:transparent;border:1px solid var(--line)}
+.online{font-size:12px;color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span class="brand">Price Gap</span><span class="online" id="net"></span></div>
+  <div class="seg" role="group" aria-label="customer" id="seg">
+    <button data-c="CN">🇨🇳 中文</button><button data-c="KR">🇰🇷 한국어</button><button data-c="JP">🇯🇵 日本語</button><button data-c="EN">🇺🇸 EN</button>
+  </div>
+  <div class="row">
+    <button class="btn" id="scanBtn"></button>
+    <select id="cur" aria-label="currency"><option>CNY</option><option>KRW</option><option>JPY</option><option>USD</option></select>
+  </div>
+  <button class="btn" id="listBtn" style="flex:none;padding:10px;font-size:14px"></button>
+  <div id="assignWrap" hidden></div>
+  <div id="pickWrap" hidden><p class="small" id="pickT" style="margin:0 0 8px"></p><div class="tabs" id="tabs"></div><div class="picker" id="picker"></div></div>
+  <div id="result"></div>
+  <details id="staff">
+    <summary id="staffT">スタッフ設定</summary>
+    <div class="f">
+      <label for="store">店頭価格（USD・入力すると優先）</label><input type="number" id="store" step="0.01" min="0" placeholder="—">
+      <label for="taxOn">米国の売上税を含める</label><input type="checkbox" id="taxOn">
+      <label for="taxRate">売上税率（%）</label><input type="number" id="taxRate" step="0.1" min="0" value="9.5">
+    </div>
+    <p class="small" id="rates" style="margin:0 0 8px"></p>
+    <div class="staffbtns"><button class="mini" id="fxBtn">為替を今すぐ更新</button><button class="mini" id="exportBtn">バーコード登録を書き出す</button><button class="mini" id="importBtn">読み込む</button></div>
+    <p class="small" id="bcInfo" style="margin:0 0 8px"></p>
+    <textarea id="bcText" hidden aria-label="barcode data"></textarea>
+    <p class="small" id="ver" style="margin:0 0 12px"></p>
+  </details>
+</div>
+<div class="scan" id="scan" hidden>
+  <video id="video" playsinline muted></video><div class="frame"></div>
+  <div class="msg" id="scanMsg"></div>
+  <div class="bar"><input id="manual" inputmode="numeric" placeholder="バーコード番号を手入力" aria-label="barcode number"><button id="manualGo">決定</button><button id="scanClose">閉じる</button></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
